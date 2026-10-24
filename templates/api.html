@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API Documentation - Décodeur MSC</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      color: #333;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .header {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 20px;
+      border-radius: 15px;
+      margin-bottom: 30px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .header h1 {
+      color: #667eea;
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+    }
+
+    .header p {
+      color: #666;
+      font-size: 1.1rem;
+    }
+
+    .api-section {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 30px;
+      border-radius: 15px;
+      margin-bottom: 30px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .api-section h2 {
+      color: #667eea;
+      font-size: 1.8rem;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #667eea;
+      padding-bottom: 10px;
+    }
+
+    .api-section h3 {
+      color: #333;
+      font-size: 1.4rem;
+      margin: 25px 0 15px 0;
+    }
+
+    .code-block {
+      background: #1e293b;
+      color: #e2e8f0;
+      padding: 20px;
+      border-radius: 10px;
+      margin: 15px 0;
+      font-family: 'Courier New', monospace;
+      overflow-x: auto;
+    }
+
+    .endpoint {
+      background: #f8fafc;
+      border: 2px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 20px;
+      margin: 15px 0;
+    }
+
+    .method {
+      display: inline-block;
+      padding: 5px 12px;
+      border-radius: 5px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      margin-right: 10px;
+    }
+
+    .method.get { background: #10b981; color: white; }
+    .method.post { background: #3b82f6; color: white; }
+    .method.put { background: #f59e0b; color: white; }
+    .method.delete { background: #ef4444; color: white; }
+
+    .url {
+      font-family: 'Courier New', monospace;
+      color: #667eea;
+      font-weight: 600;
+    }
+
+    .back-btn {
+      display: inline-block;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 12px 25px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      margin-bottom: 20px;
+      transition: all 0.3s ease;
+    }
+
+    .back-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+    }
+
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 15px 0;
+    }
+
+    .table th, .table td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .table th {
+      background: #f8fafc;
+      font-weight: 600;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="{{ url_for('home') }}" class="back-btn">
+      <i class="fas fa-arrow-left"></i> Retour à l'accueil
+    </a>
+
+    <div class="header">
+      <h1><i class="fas fa-code"></i> API Documentation</h1>
+      <p>Documentation complète de l'API REST pour intégrer le Décodeur MSC dans vos applications.</p>
+    </div>
+
+    <div class="api-section">
+      <h2><i class="fas fa-key"></i> Authentification</h2>
+      <p>L'API utilise l'authentification JWT (JSON Web Token). Vous devez d'abord obtenir un token en vous authentifiant.</p>
+      
+      <div class="endpoint">
+        <span class="method post">POST</span>
+        <span class="url">/api/v1/auth/login</span>
+        <p style="margin-top: 10px;">Authentification et obtention du token JWT</p>
+        
+        <h4>Corps de la requête :</h4>
+        <div class="code-block">
+{
+  "email": "user@example.com",
+  "password": "password123"
+}
+        </div>
+        
+        <h4>Réponse :</h4>
+        <div class="code-block">
+{
+  "success": true,
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "user": {
+    "id": 1,
+    "email": "user@example.com",
+    "role": "user"
+  }
+}
+        </div>
+      </div>
+    </div>
+
+    <div class="api-section">
+      <h2><i class="fas fa-database"></i> Endpoints de données</h2>
+      
+      <div class="endpoint">
+        <span class="method get">GET</span>
+        <span class="url">/api/v1/data</span>
+        <p style="margin-top: 10px;">Récupérer les données décodées</p>
+        
+        <h4>Paramètres de requête :</h4>
+        <table class="table">
+          <tr>
+            <th>Paramètre</th>
+            <th>Type</th>
+            <th>Description</th>
+          </tr>
+          <tr>
+            <td>start_date</td>
+            <td>string</td>
+            <td>Date de début (YYYY-MM-DD)</td>
+          </tr>
+          <tr>
+            <td>end_date</td>
+            <td>string</td>
+            <td>Date de fin (YYYY-MM-DD)</td>
+          </tr>
+          <tr>
+            <td>appelant</td>
+            <td>string</td>
+            <td>Filtrer par numéro appelant</td>
+          </tr>
+          <tr>
+            <td>msc</td>
+            <td>string</td>
+            <td>Filtrer par MSC</td>
+          </tr>
+        </table>
+      </div>
+
+      <div class="endpoint">
+        <span class="method get">GET</span>
+        <span class="url">/api/v1/export</span>
+        <p style="margin-top: 10px;">Exporter les données en CSV</p>
+        
+        <h4>Paramètres :</h4>
+        <div class="code-block">
+?format=csv&start_date=2024-01-01&end_date=2024-12-31
+        </div>
+      </div>
+    </div>
+
+    <div class="api-section">
+      <h2><i class="fas fa-users"></i> Gestion des utilisateurs</h2>
+      
+      <div class="endpoint">
+        <span class="method get">GET</span>
+        <span class="url">/api/v1/users</span>
+        <p style="margin-top: 10px;">Liste des utilisateurs (Admin uniquement)</p>
+      </div>
+
+      <div class="endpoint">
+        <span class="method put">PUT</span>
+        <span class="url">/api/v1/users/{id}</span>
+        <p style="margin-top: 10px;">Modifier un utilisateur (Admin uniquement)</p>
+      </div>
+    </div>
+
+    <div class="api-section">
+      <h2><i class="fas fa-code"></i> Exemples d'utilisation</h2>
+      
+      <h3>Python avec requests</h3>
+      <div class="code-block">
+import requests
+
+# Authentification
+response = requests.post('http://localhost:5000/api/v1/auth/login', json={
+    'email': 'user@example.com',
+    'password': 'password123'
+})
+
+token = response.json()['token']
+
+# Récupérer les données
+headers = {'Authorization': f'Bearer {token}'}
+data = requests.get('http://localhost:5000/api/v1/data', headers=headers)
+print(data.json())
+      </div>
+
+      <h3>JavaScript avec fetch</h3>
+      <div class="code-block">
+// Authentification
+const response = await fetch('/api/v1/auth/login', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+        email: 'user@example.com',
+        password: 'password123'
+    })
+});
+
+const { token } = await response.json();
+
+// Récupérer les données
+const data = await fetch('/api/v1/data', {
+    headers: {
+        'Authorization': `Bearer ${token}`
+    }
+});
+      </div>
+    </div>
+
+    <div class="api-section">
+      <h2><i class="fas fa-exclamation-triangle"></i> Codes d'erreur</h2>
+      <table class="table">
+        <tr>
+          <th>Code</th>
+          <th>Description</th>
+        </tr>
+        <tr>
+          <td>200</td>
+          <td>Succès</td>
+        </tr>
+        <tr>
+          <td>400</td>
+          <td>Requête invalide</td>
+        </tr>
+        <tr>
+          <td>401</td>
+          <td>Non authentifié</td>
+        </tr>
+        <tr>
+          <td>403</td>
+          <td>Accès refusé</td>
+        </tr>
+        <tr>
+          <td>404</td>
+          <td>Ressource non trouvée</td>
+        </tr>
+        <tr>
+          <td>500</td>
+          <td>Erreur serveur</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+</body>
+</html> 

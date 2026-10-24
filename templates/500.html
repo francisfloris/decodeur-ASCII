@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Erreur serveur - Décodeur MSC</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #333;
+        }
+
+        .error-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 60px 40px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .error-icon {
+            font-size: 80px;
+            color: #dc3545;
+            margin-bottom: 20px;
+        }
+
+        .error-code {
+            font-size: 72px;
+            font-weight: 700;
+            color: #dc3545;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .error-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .error-message {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .btn-home {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+        }
+
+        .btn-home:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(220, 53, 69, 0.4);
+        }
+
+        .btn-back {
+            background: linear-gradient(135deg, #6c757d 0%, #868e96 100%);
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-back:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(108, 117, 125, 0.4);
+        }
+
+        @media (max-width: 480px) {
+            .error-container {
+                padding: 40px 20px;
+            }
+            
+            .error-code {
+                font-size: 60px;
+            }
+            
+            .error-title {
+                font-size: 20px;
+            }
+        }
+
+        body.dark-mode {
+            background-color: #0a0a0a !important;
+            color: #ffe066 !important;
+        }
+        body.dark-mode a {
+            background-color: #223366 !important;
+            color: #ffd600 !important;
+        }
+        body.dark-mode button {
+            background-color: #223366 !important;
+            color: #ffd600 !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <div class="error-icon">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <div class="error-code">500</div>
+        <h1 class="error-title">Erreur serveur</h1>
+        <p class="error-message">
+            Désolé, une erreur interne s'est produite. Nos équipes ont été notifiées et travaillent à résoudre le problème.
+        </p>
+        <button id="theme-toggle" style="margin: 20px 0; padding: 10px 20px; background-color: #223366; color: #ffd600; border-radius: 5px; border: none; font-size: 1.1rem; cursor: pointer;">
+            <i id="theme-icon" class="fas fa-moon"></i> Mode sombre/clair
+        </button>
+        <a href="{{ url_for('home') }}" class="btn-home">
+            <i class="fas fa-home"></i>
+            Retour à l'accueil
+        </a>
+        <br>
+        <a href="javascript:history.back()" class="btn-back">
+            <i class="fas fa-arrow-left"></i>
+            Page précédente
+        </a>
+    </div>
+    <script>
+        // Mode sombre/clair
+        (function() {
+            const themeToggle = document.getElementById('theme-toggle');
+            const themeIcon = document.getElementById('theme-icon');
+            function setTheme(dark) {
+                if (dark) {
+                    document.body.classList.add('dark-mode');
+                    themeIcon.classList.remove('fa-moon');
+                    themeIcon.classList.add('fa-sun');
+                    themeToggle.title = 'Passer en mode clair';
+                    localStorage.setItem('theme', 'dark');
+                } else {
+                    document.body.classList.remove('dark-mode');
+                    themeIcon.classList.remove('fa-sun');
+                    themeIcon.classList.add('fa-moon');
+                    themeToggle.title = 'Passer en mode sombre';
+                    localStorage.setItem('theme', 'light');
+                }
+            }
+            if (themeToggle && themeIcon) {
+                const savedTheme = localStorage.getItem('theme');
+                setTheme(savedTheme === 'dark');
+                themeToggle.addEventListener('click', function() {
+                    setTheme(!document.body.classList.contains('dark-mode'));
+                });
+                window.addEventListener('storage', function(e) {
+                    if (e.key === 'theme') {
+                        setTheme(e.newValue === 'dark');
+                    }
+                });
+            }
+        })();
+    </script>
+</body>
+</html> 

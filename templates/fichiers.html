@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestion des Fichiers - Décodeur MSC</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+        body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      color: #333;
+    }
+
+    .container {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* Header */
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      z-index: 1000;
+      box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 1.5rem;
+      color: #333;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .user-email {
+      color: #666;
+      font-size: 0.9rem;
+    }
+
+    .user-info .btn-logout {
+      background: linear-gradient(135deg, #ef4444, #f87171);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      text-decoration: none;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border: none;
+      box-shadow: 0 2px 8px rgba(239, 68, 68, 0.08);
+      transition: all 0.2s;
+    }
+    .user-info .btn-logout:hover {
+      background: linear-gradient(135deg, #dc2626, #f87171);
+      color: #fff;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(239, 68, 68, 0.18);
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 280px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 20px;
+      position: fixed;
+      top: 60px;
+      left: 0;
+      height: calc(100vh - 60px);
+      overflow-y: auto;
+      box-shadow: 2px 0 20px rgba(0, 0, 0, 0.1);
+      z-index: 999;
+      transform: translateX(-280px);
+      transition: transform 0.3s ease;
+    }
+
+    .sidebar.show {
+      transform: translateX(0);
+    }
+
+    .sidebar-section {
+      margin-bottom: 25px;
+    }
+
+    .sidebar-section h3 {
+      color: #333;
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 15px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #f0f0f0;
+    }
+
+    .sidebar a {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 8px 0;
+      padding: 12px 15px;
+      border-radius: 10px;
+      font-weight: 500;
+      color: white;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      font-size: 0.9rem;
+    }
+
+    .sidebar a i {
+      width: 20px;
+      text-align: center;
+    }
+
+    .btn-dashboard { background: linear-gradient(135deg, #3b82f6, #60a5fa); }
+    .btn-files { background: linear-gradient(135deg, #8b5cf6, #a78bfa); }
+    .btn-upload { background: linear-gradient(135deg, #10b981, #34d399); }
+    .btn-decode { background: linear-gradient(135deg, #f59e0b, #fbbf24); }
+    .btn-logout { background: linear-gradient(135deg, #ef4444, #f87171); }
+
+    .sidebar a:hover {
+      transform: translateX(5px);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Main Content */
+    .main {
+      margin-left: 280px;
+      margin-top: 60px;
+      padding: 30px;
+      flex: 1;
+    }
+
+    .page-title {
+      font-size: 2rem;
+      font-weight: 700;
+      color: white;
+      margin-bottom: 30px;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Upload Section */
+    .upload-section {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      margin-bottom: 30px;
+    }
+
+    .upload-section h2 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .upload-form {
+      display: flex;
+      gap: 15px;
+      align-items: end;
+      flex-wrap: wrap;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .form-group label {
+      font-weight: 500;
+      color: #555;
+      font-size: 0.9rem;
+    }
+
+    .form-group input[type="file"] {
+      padding: 12px 15px;
+      border: 2px dashed #e5e7eb;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-family: 'Poppins', sans-serif;
+      transition: all 0.3s ease;
+      background: #f8fafc;
+    }
+
+    .form-group input[type="file"]:hover {
+      border-color: #667eea;
+      background: #f0f4ff;
+    }
+
+    .btn-upload-submit {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 12px 25px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-upload-submit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+    }
+
+    /* Files Grid */
+    .files-container {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+
+    .files-header {
+      padding: 25px 30px;
+      border-bottom: 1px solid #f0f0f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .files-header h2 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #333;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .files-count {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .files-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+      padding: 30px;
+    }
+
+    .file-card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      border: 1px solid #f0f0f0;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .file-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #667eea, #764ba2);
+    }
+
+    .file-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    .file-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      color: white;
+      margin-bottom: 15px;
+    }
+
+    .file-icon.txt { background: linear-gradient(135deg, #3b82f6, #60a5fa); }
+    .file-icon.csv { background: linear-gradient(135deg, #10b981, #34d399); }
+    .file-icon.json { background: linear-gradient(135deg, #f59e0b, #fbbf24); }
+    .file-icon.xml { background: linear-gradient(135deg, #8b5cf6, #a78bfa); }
+    .file-icon.default { background: linear-gradient(135deg, #6b7280, #9ca3af); }
+
+    .file-info h3 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 8px;
+    }
+
+    .file-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      margin-bottom: 15px;
+    }
+
+    .file-meta span {
+      font-size: 0.8rem;
+      color: #666;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .file-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .btn-action {
+      padding: 8px 12px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .btn-view {
+      background: linear-gradient(135deg, #3b82f6, #60a5fa);
+      color: white;
+    }
+
+    .btn-delete {
+      background: linear-gradient(135deg, #ef4444, #f87171);
+      color: white;
+    }
+
+    .btn-download {
+      background: linear-gradient(135deg, #10b981, #34d399);
+      color: white;
+    }
+
+    .btn-action:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 60px 30px;
+      color: #666;
+    }
+
+    .empty-state i {
+      font-size: 64px;
+      color: #cbd5e1;
+      margin-bottom: 20px;
+    }
+
+    .empty-state h3 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 10px;
+      color: #333;
+    }
+
+    .empty-state p {
+      font-size: 1rem;
+      margin-bottom: 20px;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .sidebar {
+        width: 100%;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+      }
+
+      .sidebar.show {
+        transform: translateX(0);
+      }
+
+      .main {
+        margin-left: 0;
+        padding: 20px;
+      }
+
+      .upload-form {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .files-grid {
+        grid-template-columns: 1fr;
+            padding: 20px;
+        }
+
+      .files-header {
+        flex-direction: column;
+        gap: 15px;
+        align-items: flex-start;
+      }
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .upload-section, .files-container {
+      animation: fadeInUp 0.6s ease forwards;
+        }
+
+    .file-card {
+      animation: fadeInUp 0.6s ease forwards;
+    }
+
+    .file-card:nth-child(1) { animation-delay: 0.1s; }
+    .file-card:nth-child(2) { animation-delay: 0.2s; }
+    .file-card:nth-child(3) { animation-delay: 0.3s; }
+    .file-card:nth-child(4) { animation-delay: 0.4s; }
+
+    .sidebar-edge {
+      position: fixed;
+      top: 60px;
+      left: 0;
+      width: 20px;
+      height: calc(100vh - 60px);
+      z-index: 1000;
+      cursor: pointer;
+    }
+
+    .main.shift {
+      margin-left: 280px;
+    }
+
+    /* Suppression du dark mode : suppression des règles body.dark-mode et similaires */
+    </style>
+</head>
+<body>
+  <!-- Header -->
+  <div class="header">
+    <h1>
+      <i class="fas fa-folder-open"></i>
+      Gestion des Fichiers
+    </h1>
+    <div class="user-info">
+      <span class="user-email">{{ session.email }}</span>
+      <a href="{{ url_for('logout') }}" class="btn-logout">
+        <i class="fas fa-sign-out-alt"></i> Déconnexion
+      </a>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- Sidebar -->
+    <div class="sidebar-edge" id="sidebar-edge"></div>
+    <div class="sidebar" id="sidebar">
+      <div class="sidebar-section">
+        <h3><i class="fas fa-tachometer-alt"></i> Navigation</h3>
+        <a href="{{ url_for('dashboard.dashboard') }}" class="btn-dashboard">
+          <i class="fas fa-chart-line"></i> Dashboard
+        </a>
+        <a href="{{ url_for('files.fichiers') }}" class="btn-files">
+          <i class="fas fa-folder-open"></i> Mes fichiers
+        </a>
+      </div>
+
+      <div class="sidebar-section">
+        <h3><i class="fas fa-tools"></i> Actions</h3>
+        <a href="{{ url_for('files.upload') }}" class="btn-upload">
+          <i class="fas fa-upload"></i> Upload fichier
+        </a>
+        <a href="{{ url_for('files.decode') }}" class="btn-decode">
+          <i class="fas fa-cogs"></i> Lancer décodage
+        </a>
+      </div>
+
+      <div class="sidebar-section">
+        <h3><i class="fas fa-user"></i> Compte</h3>
+        <a href="{{ url_for('logout') }}" class="btn-logout">
+          <i class="fas fa-sign-out-alt"></i> Déconnexion
+        </a>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main">
+      <h1 class="page-title">Mes fichiers</h1>
+
+      <!-- Upload Section -->
+      <div class="upload-section">
+        <h2>
+          <i class="fas fa-cloud-upload-alt"></i>
+          Upload de fichier
+        </h2>
+        <form method="post" enctype="multipart/form-data" class="upload-form">
+          <div class="form-group">
+            <label for="file">Sélectionner un fichier</label>
+            <input type="file" id="file" name="file" accept=".txt,.csv,.json,.xml" required>
+          </div>
+          <button type="submit" class="btn-upload-submit">
+            <i class="fas fa-upload"></i> Upload
+          </button>
+        </form>
+      </div>
+
+      <!-- Files List -->
+      <div class="files-container">
+        <div class="files-header">
+          <h2>
+            <i class="fas fa-list"></i>
+            Fichiers uploadés
+          </h2>
+          <span class="files-count">{{ fichiers|length }} fichier(s)</span>
+        </div>
+
+        {% if fichiers %}
+        <div class="files-grid">
+        {% for fichier in fichiers %}
+          <div class="file-card">
+            <div class="file-icon {{ fichier.nom_fichier.split('.')[-1].lower() if '.' in fichier.nom_fichier else 'default' }}">
+              <i class="fas fa-{{ 'file-alt' if fichier.nom_fichier.endswith('.txt') else 'file-csv' if fichier.nom_fichier.endswith('.csv') else 'file-code' if fichier.nom_fichier.endswith(('.json', '.xml')) else 'file' }}"></i>
+            </div>
+            
+            <div class="file-info">
+              <h3>{{ fichier.nom_fichier }}</h3>
+              
+              <div class="file-meta">
+                <span>
+                  <i class="fas fa-calendar"></i>
+                  {{ fichier.date_upload.strftime('%d/%m/%Y %H:%M') if fichier.date_upload else 'N/A' }}
+                </span>
+                <span>
+                  <i class="fas fa-user"></i>
+                  {{ fichier.utilisateur.email if fichier.utilisateur else 'Utilisateur inconnu' }}
+                </span>
+                <span>
+                  <i class="fas fa-database"></i>
+                  {{ fichier.taille_fichier if fichier.taille_fichier else 'Taille inconnue' }}
+                </span>
+              </div>
+              
+              <div class="file-actions">
+                <a href="{{ url_for('files.voir_fichier', nom_fichier=fichier.nom_fichier) }}" class="btn-action btn-view" title="Voir le contenu">
+                  <i class="fas fa-eye"></i> Voir
+                </a>
+                <a href="{{ url_for('files.telecharger_fichier', nom_fichier=fichier.nom_fichier) }}" class="btn-action btn-download" title="Télécharger">
+                  <i class="fas fa-download"></i> Télécharger
+                </a>
+                <a href="{{ url_for('files.supprimer_fichier', nom_fichier=fichier.nom_fichier) }}" 
+                   class="btn-action btn-delete" title="Supprimer"
+                   onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce fichier ?')">
+                  <i class="fas fa-trash"></i> Supprimer
+                </a>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+          <i class="fas fa-folder-open"></i>
+          <h3>Aucun fichier uploadé</h3>
+          <p>Commencez par uploader votre premier fichier pour le décodage MSC.</p>
+          <a href="{{ url_for('files.upload') }}" class="btn-upload-submit">
+            <i class="fas fa-plus"></i> Uploader un fichier
+          </a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+</div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const sidebar = document.getElementById('sidebar');
+      const main = document.querySelector('.main');
+      const edge = document.getElementById('sidebar-edge');
+      edge.addEventListener('mouseenter', function() {
+        sidebar.classList.add('show');
+        if(main) main.classList.add('shift');
+      });
+      sidebar.addEventListener('mouseleave', function() {
+        sidebar.classList.remove('show');
+        if(main) main.classList.remove('shift');
+      });
+      if(main) main.addEventListener('click', function() {
+        sidebar.classList.remove('show');
+        main.classList.remove('shift');
+      });
+    });
+
+    // File upload progress (if needed)
+    document.querySelector('input[type="file"]').addEventListener('change', function() {
+      const fileName = this.files[0]?.name;
+      if (fileName) {
+        console.log('Fichier sélectionné:', fileName);
+      }
+    });
+
+    // Suppression du JS dark mode
+  </script>
+</body>
+</html>

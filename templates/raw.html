@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lignes Brutes MongoDB - Décodeur MSC</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      color: #333;
+    }
+
+    .container {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* Header */
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      z-index: 1000;
+      box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 1.5rem;
+      color: #333;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .user-email {
+      color: #666;
+      font-size: 0.9rem;
+    }
+
+    .user-info .btn-logout {
+      background: linear-gradient(135deg, #ef4444, #f87171);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      text-decoration: none;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border: none;
+      box-shadow: 0 2px 8px rgba(239, 68, 68, 0.08);
+      transition: all 0.2s;
+    }
+    .user-info .btn-logout:hover {
+      background: linear-gradient(135deg, #dc2626, #f87171);
+      color: #fff;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(239, 68, 68, 0.18);
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 280px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 20px;
+      position: fixed;
+      top: 60px;
+      left: 0;
+      height: calc(100vh - 60px);
+      overflow-y: auto;
+      box-shadow: 2px 0 20px rgba(0, 0, 0, 0.1);
+      z-index: 999;
+      transform: translateX(-280px);
+      transition: transform 0.3s ease;
+    }
+
+    .sidebar.show {
+      transform: translateX(0);
+    }
+
+    .sidebar-section {
+      margin-bottom: 25px;
+    }
+
+    .sidebar-section h3 {
+      color: #333;
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 15px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #f0f0f0;
+    }
+
+    .sidebar a {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 8px 0;
+      padding: 12px 15px;
+      border-radius: 10px;
+      font-weight: 500;
+      color: white;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      font-size: 0.9rem;
+    }
+
+    .sidebar a i {
+      width: 20px;
+      text-align: center;
+    }
+
+    .btn-dashboard { background: linear-gradient(135deg, #3b82f6, #60a5fa); }
+    .btn-files { background: linear-gradient(135deg, #8b5cf6, #a78bfa); }
+    .btn-raw { background: linear-gradient(135deg, #10b981, #34d399); }
+    .btn-decode { background: linear-gradient(135deg, #f59e0b, #fbbf24); }
+    .btn-logout { background: linear-gradient(135deg, #ef4444, #f87171); }
+
+    .sidebar a:hover {
+      transform: translateX(5px);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Main Content */
+    .main {
+      margin-left: 280px;
+      margin-top: 60px;
+      padding: 30px;
+      flex: 1;
+    }
+
+    .page-title {
+      font-size: 2rem;
+      font-weight: 700;
+      color: white;
+      margin-bottom: 30px;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Filters Section */
+    .filters-section {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 25px;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      margin-bottom: 30px;
+    }
+
+    .filters-section h2 {
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .filters-form {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      align-items: end;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .form-group label {
+      font-weight: 500;
+      color: #555;
+      font-size: 0.9rem;
+    }
+
+    .form-group input {
+      padding: 12px 15px;
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-family: 'Poppins', sans-serif;
+      transition: all 0.3s ease;
+    }
+
+    .form-group input:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .btn-filter {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 0.9rem;
+    }
+
+    .btn-filter:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn-reset {
+      background: #6b7280;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 0.9rem;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-reset:hover {
+      background: #4b5563;
+      transform: translateY(-2px);
+    }
+
+    /* Raw Data Container */
+    .raw-container {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+
+    .raw-header {
+      padding: 25px 30px;
+      border-bottom: 1px solid #f0f0f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .raw-header h2 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #333;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .raw-stats {
+      display: flex;
+      gap: 15px;
+      align-items: center;
+    }
+
+    .stat-badge {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn-action {
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-weight: 500;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      font-size: 0.9rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .btn-danger {
+      background: linear-gradient(135deg, #ef4444, #f87171);
+      color: white;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #3b82f6, #60a5fa);
+      color: white;
+    }
+
+    .btn-action:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Table */
+    .table-container {
+      overflow-x: auto;
+    }
+
+    .raw-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .raw-table th {
+      background: #f8fafc;
+      padding: 15px 20px;
+      text-align: left;
+      font-weight: 600;
+      color: #333;
+      font-size: 0.9rem;
+      border-bottom: 2px solid #e5e7eb;
+    }
+
+    .raw-table td {
+      padding: 15px 20px;
+      border-bottom: 1px solid #f0f0f0;
+      font-size: 0.9rem;
+      vertical-align: top;
+    }
+
+    .raw-table tr:hover {
+      background: #f8fafc;
+    }
+
+    .raw-content {
+      background: #1f2937;
+      color: #f9fafb;
+      padding: 15px;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.85rem;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      max-width: 400px;
+      overflow-x: auto;
+    }
+
+    .file-name {
+      font-weight: 600;
+      color: #333;
+    }
+
+    .timestamp {
+      color: #666;
+      font-size: 0.8rem;
+    }
+
+    /* Pagination */
+    .pagination {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 15px;
+      padding: 25px;
+      border-top: 1px solid #f0f0f0;
+    }
+
+    .pagination a,
+    .pagination span {
+      padding: 10px 15px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+
+    .pagination a {
+      background: #f8fafc;
+      color: #333;
+      border: 1px solid #e5e7eb;
+    }
+
+    .pagination a:hover {
+      background: #667eea;
+      color: white;
+      border-color: #667eea;
+    }
+
+    .pagination .current {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: 1px solid #667eea;
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 60px 30px;
+      color: #666;
+    }
+
+    .empty-state i {
+      font-size: 64px;
+      color: #cbd5e1;
+      margin-bottom: 20px;
+    }
+
+    .empty-state h3 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 10px;
+      color: #333;
+    }
+
+    .empty-state p {
+      font-size: 1rem;
+      margin-bottom: 20px;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .sidebar {
+        width: 100%;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+      }
+
+      .sidebar.show {
+        transform: translateX(0);
+      }
+
+      .main {
+        margin-left: 0;
+        padding: 20px;
+      }
+
+      .filters-form {
+        grid-template-columns: 1fr;
+      }
+
+      .raw-header {
+        flex-direction: column;
+        gap: 15px;
+        align-items: flex-start;
+      }
+
+      .raw-stats {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .action-buttons {
+        flex-direction: column;
+        width: 100%;
+      }
+
+      .raw-table {
+        font-size: 0.8rem;
+      }
+
+      .raw-table th,
+      .raw-table td {
+        padding: 10px 15px;
+      }
+
+      .raw-content {
+        max-width: 200px;
+        font-size: 0.75rem;
+      }
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .filters-section, .raw-container {
+      animation: fadeInUp 0.6s ease forwards;
+    }
+
+    .sidebar-edge {
+      position: fixed;
+      top: 60px;
+      left: 0;
+      width: 20px;
+      height: calc(100vh - 60px);
+      z-index: 1000;
+      cursor: pointer;
+    }
+
+    .main.shift {
+      margin-left: 280px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <div class="header">
+    <h1>
+      <i class="fas fa-database"></i>
+      Lignes Brutes MongoDB
+    </h1>
+    <div class="user-info">
+      <span class="user-email">{{ session.email }}</span>
+      <a href="{{ url_for('logout') }}" class="btn-logout">
+        <i class="fas fa-sign-out-alt"></i> Déconnexion
+      </a>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- Sidebar -->
+    <div class="sidebar-edge" id="sidebar-edge"></div>
+    <div class="sidebar" id="sidebar">
+      <div class="sidebar-section">
+        <h3><i class="fas fa-tachometer-alt"></i> Navigation</h3>
+        <a href="{{ url_for('dashboard.dashboard') }}" class="btn-dashboard">
+          <i class="fas fa-chart-line"></i> Dashboard
+        </a>
+        <a href="{{ url_for('files.fichiers') }}" class="btn-files">
+          <i class="fas fa-folder-open"></i> Mes fichiers
+        </a>
+        <a href="{{ url_for('files.raw') }}" class="btn-raw">
+          <i class="fas fa-database"></i> Lignes brutes
+        </a>
+      </div>
+
+      <div class="sidebar-section">
+        <h3><i class="fas fa-tools"></i> Actions</h3>
+        <a href="{{ url_for('files.upload') }}" class="btn-files">
+          <i class="fas fa-upload"></i> Upload fichier
+        </a>
+        <a href="{{ url_for('files.decode') }}" class="btn-decode">
+          <i class="fas fa-cogs"></i> Lancer décodage
+        </a>
+      </div>
+
+      <div class="sidebar-section">
+        <h3><i class="fas fa-user"></i> Compte</h3>
+        <a href="{{ url_for('logout') }}" class="btn-logout">
+          <i class="fas fa-sign-out-alt"></i> Déconnexion
+        </a>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main">
+      <h1 class="page-title">Lignes brutes MongoDB</h1>
+
+      <!-- Filters Section -->
+      <div class="filters-section">
+        <h2>
+          <i class="fas fa-filter"></i>
+          Filtres de recherche
+        </h2>
+        <form method="get" action="{{ url_for('files.raw') }}" class="filters-form">
+          <div class="form-group">
+            <label for="nom_fichier">Nom du fichier</label>
+            <input type="text" id="nom_fichier" name="nom_fichier" value="{{ nom_fichier }}" placeholder="Rechercher par nom de fichier">
+          </div>
+          
+          <div class="form-group">
+            <label for="date_debut">Date début</label>
+            <input type="date" id="date_debut" name="date_debut" value="{{ date_debut }}">
+          </div>
+          
+          <div class="form-group">
+            <label for="date_fin">Date fin</label>
+            <input type="date" id="date_fin" name="date_fin" value="{{ date_fin }}">
+          </div>
+          
+          <button type="submit" class="btn-filter">
+            <i class="fas fa-search"></i> Filtrer
+          </button>
+          
+          <a href="{{ url_for('files.raw') }}" class="btn-reset">
+            <i class="fas fa-undo"></i> Réinitialiser
+          </a>
+        </form>
+      </div>
+
+      <!-- Raw Data Container -->
+      <div class="raw-container">
+        <div class="raw-header">
+          <h2>
+            <i class="fas fa-list"></i>
+            Données brutes importées
+          </h2>
+          <div class="raw-stats">
+            <span class="stat-badge">{{ total }} lignes</span>
+            <div class="action-buttons">
+              <a href="{{ url_for('files.clear_raw_lines') }}" class="btn-action btn-danger" 
+                 onclick="return confirm('Êtes-vous sûr de vouloir supprimer toutes les lignes brutes ? Cette action est irréversible.')">
+                <i class="fas fa-trash"></i> Vider MongoDB
+              </a>
+              <a href="{{ url_for('dashboard.dashboard') }}" class="btn-action btn-primary">
+                <i class="fas fa-arrow-left"></i> Retour dashboard
+              </a>
+            </div>
+          </div>
+        </div>
+
+        {% if lignes %}
+        <div class="table-container">
+          <table class="raw-table">
+            <thead>
+              <tr>
+                <th>Contenu</th>
+                <th>Nom du fichier</th>
+                <th>Horodatage</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for ligne in lignes %}
+              <tr>
+                <td>
+                  <div class="raw-content">{{ ligne.contenu_ligne }}</div>
+                </td>
+                <td>
+                  <div class="file-name">{{ ligne.nom_fichier }}</div>
+                </td>
+                <td>
+                  <div class="timestamp">
+                    {{ ligne.horodatage_insertion.strftime('%d/%m/%Y %H:%M:%S') if ligne.horodatage_insertion else 'N/A' }}
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination">
+          {% if page > 1 %}
+            <a href="{{ url_for('files.raw', page=page-1, nom_fichier=nom_fichier, date_debut=date_debut, date_fin=date_fin) }}">
+              <i class="fas fa-chevron-left"></i> Précédent
+            </a>
+          {% endif %}
+
+          <span class="current">Page {{ page }}</span>
+
+          {% if page * par_page < total %}
+            <a href="{{ url_for('files.raw', page=page+1, nom_fichier=nom_fichier, date_debut=date_debut, date_fin=date_fin) }}">
+              Suivant <i class="fas fa-chevron-right"></i>
+            </a>
+          {% endif %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+          <i class="fas fa-database"></i>
+          <h3>Aucune ligne brute trouvée</h3>
+          <p>Aucune donnée brute n'a été importée dans MongoDB pour le moment.</p>
+          <a href="{{ url_for('files.upload') }}" class="btn-filter">
+            <i class="fas fa-upload"></i> Uploader un fichier
+          </a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const sidebar = document.getElementById('sidebar');
+      const main = document.querySelector('.main');
+      const edge = document.getElementById('sidebar-edge');
+      edge.addEventListener('mouseenter', function() {
+        sidebar.classList.add('show');
+        if(main) main.classList.add('shift');
+      });
+      sidebar.addEventListener('mouseleave', function() {
+        sidebar.classList.remove('show');
+        if(main) main.classList.remove('shift');
+      });
+      if(main) main.addEventListener('click', function() {
+        sidebar.classList.remove('show');
+        main.classList.remove('shift');
+      });
+    });
+  </script>
+</body>
+</html>

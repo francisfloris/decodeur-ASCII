@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Centre d'aide - Décodeur MSC</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      color: #333;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .header {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 30px;
+      border-radius: 15px;
+      margin-bottom: 30px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+
+    .header h1 {
+      color: #667eea;
+      font-size: 2.5rem;
+      margin-bottom: 15px;
+    }
+
+    .header p {
+      color: #666;
+      font-size: 1.1rem;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .search-box {
+      max-width: 500px;
+      margin: 20px auto 0;
+      position: relative;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 15px 20px;
+      border: 2px solid #e2e8f0;
+      border-radius: 10px;
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.3s ease;
+    }
+
+    .search-input:focus {
+      border-color: #667eea;
+    }
+
+    .help-section {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 30px;
+      border-radius: 15px;
+      margin-bottom: 30px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .help-section h2 {
+      color: #667eea;
+      font-size: 1.8rem;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #667eea;
+      padding-bottom: 10px;
+    }
+
+    .back-btn {
+      display: inline-block;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 12px 25px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      margin-bottom: 20px;
+      transition: all 0.3s ease;
+    }
+
+    .back-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+    }
+
+    .help-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .help-card {
+      background: #f8fafc;
+      border: 2px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 20px;
+      transition: all 0.3s ease;
+    }
+
+    .help-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      border-color: #667eea;
+    }
+
+    .help-card h3 {
+      color: #333;
+      font-size: 1.2rem;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .help-card p {
+      color: #666;
+      line-height: 1.6;
+      margin-bottom: 15px;
+    }
+
+    .help-card a {
+      color: #667eea;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .help-card a:hover {
+      text-decoration: underline;
+    }
+
+    .faq-item {
+      background: #f8fafc;
+      border: 2px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 20px;
+      margin: 15px 0;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .faq-item:hover {
+      border-color: #667eea;
+    }
+
+    .faq-question {
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .faq-answer {
+      color: #666;
+      line-height: 1.6;
+      display: none;
+      margin-top: 15px;
+      padding-top: 15px;
+      border-top: 1px solid #e2e8f0;
+    }
+
+    .faq-answer.show {
+      display: block;
+    }
+
+    .contact-info {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .contact-card {
+      background: #f8fafc;
+      border: 2px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .contact-card h4 {
+      color: #333;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .contact-card p {
+      color: #666;
+      margin-bottom: 5px;
+    }
+
+    .status-indicator {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #10b981;
+      margin-left: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="{{ url_for('home') }}" class="back-btn">
+      <i class="fas fa-arrow-left"></i> Retour à l'accueil
+    </a>
+
+    <div class="header">
+      <h1><i class="fas fa-question-circle"></i> Centre d'aide</h1>
+      <p>Trouvez rapidement l'aide dont vous avez besoin. Guides, tutoriels et support technique.</p>
+      
+      <div class="search-box">
+        <input type="text" class="search-input" placeholder="Rechercher dans l'aide..." id="searchInput">
+      </div>
+    </div>
+
+    <div class="help-section">
+      <h2><i class="fas fa-rocket"></i> Guides rapides</h2>
+      
+      <div class="help-grid">
+        <div class="help-card">
+          <h3><i class="fas fa-user-plus"></i> Première connexion</h3>
+          <p>Apprenez à créer votre compte et à vous connecter pour la première fois.</p>
+          <a href="#">Lire le guide →</a>
+        </div>
+        
+        <div class="help-card">
+          <h3><i class="fas fa-upload"></i> Upload de fichiers</h3>
+          <p>Comment télécharger et traiter vos fichiers MSC sur la plateforme.</p>
+          <a href="#">Lire le guide →</a>
+        </div>
+        
+        <div class="help-card">
+          <h3><i class="fas fa-chart-line"></i> Utiliser le dashboard</h3>
+          <p>Découvrez toutes les fonctionnalités du tableau de bord et des filtres.</p>
+          <a href="#">Lire le guide →</a>
+        </div>
+        
+        <div class="help-card">
+          <h3><i class="fas fa-download"></i> Exporter vos données</h3>
+          <p>Comment exporter vos données décodées en CSV, TXT ou via l'API.</p>
+          <a href="#">Lire le guide →</a>
+        </div>
+        
+        <div class="help-card">
+          <h3><i class="fas fa-code"></i> Utiliser l'API</h3>
+          <p>Intégrez le Décodeur MSC dans vos applications avec notre API REST.</p>
+          <a href="#">Lire le guide →</a>
+        </div>
+        
+        <div class="help-card">
+          <h3><i class="fas fa-credit-card"></i> Gérer les abonnements</h3>
+          <p>Comprendre les différents plans et gérer vos paiements.</p>
+          <a href="#">Lire le guide →</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="help-section">
+      <h2><i class="fas fa-question-circle"></i> Questions fréquentes</h2>
+      
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-question">
+          Comment fonctionne le décodage MSC ?
+          <i class="fas fa-chevron-down"></i>
+        </div>
+        <div class="faq-answer">
+          Le système analyse automatiquement chaque ligne de vos fichiers MSC et extrait les informations structurées : type d'événement, date/heure, numéros, durée, cellules et MSC. Les données sont ensuite stockées dans notre base de données sécurisée.
+        </div>
+      </div>
+
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-question">
+          Quels formats de fichiers sont supportés ?
+          <i class="fas fa-chevron-down"></i>
+        </div>
+        <div class="faq-answer">
+          Nous supportons les formats .txt, .csv, .log, .ini, .conf, .cfg, .py, .sh, .js, .html, .css, .xml, .json. Les fichiers doivent contenir des données MSC au format attendu.
+        </div>
+      </div>
+
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-question">
+          Combien de temps dure le traitement ?
+          <i class="fas fa-chevron-down"></i>
+        </div>
+        <div class="faq-answer">
+          Le temps de traitement dépend de la taille du fichier. En moyenne, 1000 lignes sont traitées en 30 secondes. Vous recevrez une notification par email une fois le traitement terminé.
+        </div>
+      </div>
+
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-question">
+          Mes données sont-elles sécurisées ?
+          <i class="fas fa-chevron-down"></i>
+        </div>
+        <div class="faq-answer">
+          Absolument. Toutes les données sont chiffrées, les accès sont contrôlés et nous respectons le RGPD. Vos fichiers sont automatiquement supprimés après traitement sauf si vous choisissez de les conserver.
+        </div>
+      </div>
+
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-question">
+          Comment contacter le support ?
+          <i class="fas fa-chevron-down"></i>
+        </div>
+        <div class="faq-answer">
+          Vous pouvez nous contacter par email à support@decodeur-msc.com, par chat en ligne 24/7, ou par téléphone au +33 1 23 45 67 89. Notre équipe répond sous 24h.
+        </div>
+      </div>
+    </div>
+
+    <div class="help-section">
+      <h2><i class="fas fa-headset"></i> Support et contact</h2>
+      
+      <div class="contact-info">
+        <div class="contact-card">
+          <h4><i class="fas fa-envelope"></i> Email</h4>
+          <p>support@decodeur-msc.com</p>
+          <p>Réponse sous 24h</p>
+        </div>
+        
+        <div class="contact-card">
+          <h4><i class="fas fa-comments"></i> Chat en ligne</h4>
+          <p>Support 24/7</p>
+          <p><span class="status-indicator"></span> En ligne</p>
+        </div>
+        
+        <div class="contact-card">
+          <h4><i class="fas fa-phone"></i> Téléphone</h4>
+          <p>+242 06 929 54 81</p>
+          <p>Lun-Ven 9h-18h</p>
+        </div>
+        
+        <div class="contact-card">
+          <h4><i class="fas fa-book"></i> Documentation</h4>
+          <p>Guides complets</p>
+          <p><a href="#">Accéder →</a></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="help-section">
+      <h2><i class="fas fa-tools"></i> Outils utiles</h2>
+      
+      <div class="help-grid">
+        <div class="help-card">
+          <h3><i class="fas fa-calculator"></i> Calculateur de quota</h3>
+          <p>Estimez votre consommation de décodages selon vos besoins.</p>
+          <a href="#">Utiliser l'outil →</a>
+        </div>
+        
+        <div class="help-card">
+          <h3><i class="fas fa-file-check"></i> Validateur de format</h3>
+          <p>Vérifiez que vos fichiers sont au bon format avant upload.</p>
+          <a href="#">Utiliser l'outil →</a>
+        </div>
+        
+        <div class="help-card">
+          <h3><i class="fas fa-chart-bar"></i> Simulateur de coûts</h3>
+          <p>Calculez le coût de vos décodages selon votre plan.</p>
+          <a href="#">Utiliser l'outil →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function toggleFaq(element) {
+      const answer = element.querySelector('.faq-answer');
+      const icon = element.querySelector('.fa-chevron-down');
+      
+      if (answer.classList.contains('show')) {
+        answer.classList.remove('show');
+        icon.classList.remove('fa-chevron-up');
+        icon.classList.add('fa-chevron-down');
+      } else {
+        answer.classList.add('show');
+        icon.classList.remove('fa-chevron-down');
+        icon.classList.add('fa-chevron-up');
+      }
+    }
+
+    // Recherche dans l'aide
+    document.getElementById('searchInput').addEventListener('input', function() {
+      const searchTerm = this.value.toLowerCase();
+      const faqItems = document.querySelectorAll('.faq-item');
+      const helpCards = document.querySelectorAll('.help-card');
+      
+      // Recherche dans les FAQ
+      faqItems.forEach(item => {
+        const question = item.querySelector('.faq-question').textContent.toLowerCase();
+        const answer = item.querySelector('.faq-answer').textContent.toLowerCase();
+        
+        if (question.includes(searchTerm) || answer.includes(searchTerm)) {
+          item.style.display = 'block';
+        } else {
+          item.style.display = 'none';
+        }
+      });
+      
+      // Recherche dans les guides
+      helpCards.forEach(card => {
+        const title = card.querySelector('h3').textContent.toLowerCase();
+        const description = card.querySelector('p').textContent.toLowerCase();
+        
+        if (title.includes(searchTerm) || description.includes(searchTerm)) {
+          card.style.display = 'block';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    });
+  </script>
+</body>
+</html> 

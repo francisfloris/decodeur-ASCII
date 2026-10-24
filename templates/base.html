@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}DecodeIt{% endblock %}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
+  {% block head %}{% endblock %}
+</head>
+<body class="bg-background text-dark {% block body_class %}{% endblock %}">
+  <main class="layout-main">
+    {% block content %}{% endblock %}
+  </main>
+
+  <button type="button" id="themeToggle" class="btn btn-outline theme-toggle" aria-label="Basculer le thème">
+    <i class="fas fa-moon"></i>
+  </button>
+
+  <script>
+    (function () {
+      const STORAGE_KEY = 'decodeit-theme';
+      const root = document.documentElement;
+      const toggle = document.getElementById('themeToggle');
+
+      function setToggleIcon(theme) {
+        if (!toggle) return;
+        const icon = toggle.querySelector('i');
+        if (!icon) return;
+        icon.classList.remove('fa-sun', 'fa-moon');
+        icon.classList.add(theme === 'dark' ? 'fa-sun' : 'fa-moon');
+      }
+
+      function applyTheme(theme) {
+        root.setAttribute('data-theme', theme);
+        localStorage.setItem(STORAGE_KEY, theme);
+        setToggleIcon(theme);
+      }
+
+      const stored = localStorage.getItem(STORAGE_KEY);
+      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      applyTheme(stored || (prefersDark ? 'dark' : 'light'));
+
+      if (toggle) {
+        toggle.addEventListener('click', function () {
+          const nextTheme = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+          applyTheme(nextTheme);
+        });
+      }
+    })();
+  </script>
+
+  {% block scripts %}{% endblock %}
+</body>
+</html>
+

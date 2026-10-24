@@ -1,0 +1,89 @@
+<!-- templates/403.html -->
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Accès refusé</title>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #fef2f2;
+      color: #b91c1c;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      flex-direction: column;
+      text-align: center;
+    }
+    h1 {
+      font-size: 3rem;
+    }
+    p {
+      font-size: 1.2rem;
+    }
+    a {
+      margin-top: 20px;
+      padding: 10px 20px;
+      background-color: #b91c1c;
+      color: white;
+      text-decoration: none;
+      border-radius: 5px;
+    }
+    body.dark-mode {
+      background-color: #0a0a0a !important;
+      color: #ffe066 !important;
+    }
+    body.dark-mode a {
+      background-color: #223366 !important;
+      color: #ffd600 !important;
+    }
+    body.dark-mode button {
+      background-color: #223366 !important;
+      color: #ffd600 !important;
+    }
+  </style>
+</head>
+<body>
+  <h1> 403 - Rejet !</h1>
+  <p>Vous n'avez pas le droit d'effectuer cette action.</p>
+  <button id="theme-toggle" style="margin: 20px 0; padding: 10px 20px; background-color: #223366; color: #ffd600; border-radius: 5px; border: none; font-size: 1.1rem; cursor: pointer;">
+    <i id="theme-icon" class="fas fa-moon"></i> Mode sombre/clair
+  </button>
+  <a href="{{ url_for('dashboard.dashboard') }}">Retour au tableau de bord</a>
+  <script>
+    // Mode sombre/clair
+    (function() {
+      const themeToggle = document.getElementById('theme-toggle');
+      const themeIcon = document.getElementById('theme-icon');
+      function setTheme(dark) {
+        if (dark) {
+          document.body.classList.add('dark-mode');
+          themeIcon.classList.remove('fa-moon');
+          themeIcon.classList.add('fa-sun');
+          themeToggle.title = 'Passer en mode clair';
+          localStorage.setItem('theme', 'dark');
+        } else {
+          document.body.classList.remove('dark-mode');
+          themeIcon.classList.remove('fa-sun');
+          themeIcon.classList.add('fa-moon');
+          themeToggle.title = 'Passer en mode sombre';
+          localStorage.setItem('theme', 'light');
+        }
+      }
+      if (themeToggle && themeIcon) {
+        const savedTheme = localStorage.getItem('theme');
+        setTheme(savedTheme === 'dark');
+        themeToggle.addEventListener('click', function() {
+          setTheme(!document.body.classList.contains('dark-mode'));
+        });
+        window.addEventListener('storage', function(e) {
+          if (e.key === 'theme') {
+            setTheme(e.newValue === 'dark');
+          }
+        });
+      }
+    })();
+  </script>
+</body>
+</html>

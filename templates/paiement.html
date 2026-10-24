@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Paiement - Décodeur MSC</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      color: #333;
+    }
+
+    .container {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* Header */
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      z-index: 1000;
+      box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 1.5rem;
+      color: #333;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .user-email {
+      color: #666;
+      font-size: 0.9rem;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 280px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 20px;
+      position: fixed;
+      top: 60px;
+      left: 0;
+      height: calc(100vh - 60px);
+      overflow-y: auto;
+      box-shadow: 2px 0 20px rgba(0, 0, 0, 0.1);
+      z-index: 999;
+      transform: translateX(-280px);
+      transition: transform 0.3s ease;
+    }
+
+    .sidebar.show {
+      transform: translateX(0);
+    }
+
+    .sidebar-edge {
+      position: fixed;
+      top: 60px;
+      left: 0;
+      width: 20px;
+      height: calc(100vh - 60px);
+      z-index: 1000;
+      cursor: pointer;
+    }
+
+    .main.shift {
+      margin-left: 280px;
+    }
+
+    .sidebar-section {
+      margin-bottom: 25px;
+    }
+
+    .sidebar-section h3 {
+      color: #333;
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 15px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #f0f0f0;
+    }
+
+    .sidebar a {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 8px 0;
+      padding: 12px 15px;
+      border-radius: 10px;
+      font-weight: 500;
+      color: white;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      font-size: 0.9rem;
+    }
+
+    .sidebar a i {
+      width: 20px;
+      text-align: center;
+    }
+
+    .btn-dashboard { background: linear-gradient(135deg, #3b82f6, #60a5fa); }
+    .btn-subscriptions { background: linear-gradient(135deg, #8b5cf6, #a78bfa); }
+    .btn-payments { background: linear-gradient(135deg, #10b981, #34d399); }
+    .btn-account { background: linear-gradient(135deg, #f59e0b, #fbbf24); }
+    .btn-logout { background: linear-gradient(135deg, #ef4444, #f87171); }
+
+    .sidebar a:hover {
+      transform: translateX(5px);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Main Content */
+    .main {
+      margin-left: 280px;
+      margin-top: 60px;
+      padding: 30px;
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    .page-title {
+      font-size: 2rem;
+      font-weight: 700;
+      color: white;
+      margin-bottom: 30px;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+      text-align: center;
+    }
+
+    /* Payment Container */
+    .payment-container {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 40px;
+      border-radius: 20px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 600px;
+      animation: fadeInUp 0.6s ease forwards;
+    }
+
+    .payment-header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .payment-header h2 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #333;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 15px;
+    }
+
+    .payment-header p {
+      color: #666;
+      font-size: 1rem;
+    }
+
+    .payment-icon {
+      width: 60px;
+      height: 60px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+      font-size: 24px;
+      color: white;
+    }
+
+    /* Plan Selection */
+    .plan-selection {
+      margin-bottom: 30px;
+    }
+
+    .plan-selection h3 {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .plan-select {
+      width: 100%;
+      padding: 15px;
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-family: 'Poppins', sans-serif;
+      background: white;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .plan-select:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    /* Plan Cards */
+    .plan-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+
+    .plan-card {
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background: white;
+    }
+
+    .plan-card:hover {
+      border-color: #667eea;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+    }
+
+    .plan-card.selected {
+      border-color: #667eea;
+      background: #f0f9ff;
+      box-shadow: 0 8px 25px rgba(102, 126, 234, 0.2);
+    }
+
+    .plan-name {
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    .plan-price {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #667eea;
+      margin-bottom: 5px;
+    }
+
+    .plan-duration {
+      color: #666;
+      font-size: 0.9rem;
+    }
+
+    .plan-features {
+      margin-top: 15px;
+      font-size: 0.8rem;
+      color: #666;
+    }
+
+    /* Card Section */
+    .card-section {
+      border-top: 1px solid #e5e7eb;
+      padding-top: 30px;
+      margin-top: 30px;
+      transition: all 0.3s ease;
+    }
+
+    .card-section.hidden {
+      display: none;
+    }
+
+    .card-section h3 {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      font-weight: 500;
+      color: #555;
+      margin-bottom: 8px;
+      font-size: 0.9rem;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 12px 15px;
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-family: 'Poppins', sans-serif;
+      transition: all 0.3s ease;
+    }
+
+    .form-group input:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+
+    /* Buttons */
+    .payment-buttons {
+      display: flex;
+      gap: 15px;
+      margin-top: 30px;
+    }
+
+    .btn {
+      padding: 15px 30px;
+      border-radius: 10px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      border: none;
+      cursor: pointer;
+      font-size: 1rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+      justify-content: center;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn-secondary {
+      background: #f3f4f6;
+      color: #374151;
+      border: 2px solid #e5e7eb;
+    }
+
+    .btn-secondary:hover {
+      background: #e5e7eb;
+      transform: translateY(-2px);
+    }
+
+    /* Summary */
+    .payment-summary {
+      background: #f8fafc;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      border-left: 4px solid #667eea;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .summary-row:last-child {
+      margin-bottom: 0;
+      font-weight: 600;
+      color: #333;
+      border-top: 1px solid #e5e7eb;
+      padding-top: 10px;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .sidebar {
+        width: 100%;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+      }
+
+      .sidebar.show {
+        transform: translateX(0);
+      }
+
+      .main {
+        margin-left: 0;
+        padding: 20px;
+      }
+
+      .payment-container {
+        padding: 30px 20px;
+      }
+
+      .plan-cards {
+        grid-template-columns: 1fr;
+      }
+
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+
+      .payment-buttons {
+        flex-direction: column;
+      }
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <div class="header">
+    <h1>
+      <i class="fas fa-credit-card"></i>
+      Paiement
+    </h1>
+    <div class="user-info">
+      <span class="user-email">{{ session.email }}</span>
+      <a href="{{ url_for('logout') }}" class="btn" style="padding: 8px 16px; font-size: 0.8rem; background: linear-gradient(135deg, #ef4444, #f87171); color: white;">
+        <i class="fas fa-sign-out-alt"></i> Déconnexion
+      </a>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- Sidebar -->
+    <div class="sidebar-edge" id="sidebar-edge"></div>
+    <div class="sidebar" id="sidebar">
+      <div class="sidebar-section">
+        <h3><i class="fas fa-tachometer-alt"></i> Navigation</h3>
+        <a href="{{ url_for('dashboard.dashboard') }}" class="btn-dashboard">
+          <i class="fas fa-chart-line"></i> Dashboard
+        </a>
+        <a href="{{ url_for('files.fichiers') }}" class="btn-subscriptions">
+          <i class="fas fa-folder-open"></i> Mes fichiers
+        </a>
+        <a href="{{ url_for('files.decodeurs') }}" class="btn-subscriptions">
+          <i class="fas fa-history"></i> Historique
+        </a>
+      </div>
+
+      <div class="sidebar-section">
+        <h3><i class="fas fa-credit-card"></i> Compte</h3>
+        <a href="{{ url_for('subscription.mes_abonnements') }}" class="btn-subscriptions">
+          <i class="fas fa-credit-card"></i> Mes abonnements
+        </a>
+        <a href="{{ url_for('subscription.mes_paiements') }}" class="btn-payments">
+          <i class="fas fa-receipt"></i> Mes paiements
+        </a>
+        <a href="{{ url_for('subscription.paiement') }}" class="btn-account">
+          <i class="fas fa-plus"></i> Nouvel abonnement
+        </a>
+      </div>
+
+      <div class="sidebar-section">
+        <h3><i class="fas fa-user"></i> Compte</h3>
+        <a href="{{ url_for('logout') }}" class="btn-logout">
+          <i class="fas fa-sign-out-alt"></i> Déconnexion
+        </a>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main">
+      <div class="payment-container">
+        <div class="payment-header">
+          <div class="payment-icon">
+            <i class="fas fa-credit-card"></i>
+          </div>
+          <h2>Souscription à un abonnement</h2>
+          <p>Choisissez la formule qui vous convient le mieux</p>
+        </div>
+
+        <form method="post" id="paymentForm">
+          <!-- Plan Selection -->
+          <div class="plan-selection">
+            <h3>
+              <i class="fas fa-crown"></i>
+              Choisir une formule
+            </h3>
+            
+            <div class="plan-cards">
+              <div class="plan-card" data-value="1">
+                <div class="plan-name">Gratuit</div>
+                <div class="plan-price">0€</div>
+                <div class="plan-duration">30 jours</div>
+                <div class="plan-features">Accès limité</div>
+              </div>
+              
+              <div class="plan-card" data-value="2">
+                <div class="plan-name">Pro</div>
+                <div class="plan-price">49€</div>
+                <div class="plan-duration">30 jours</div>
+                <div class="plan-features">Accès complet</div>
+              </div>
+              
+              <div class="plan-card" data-value="3">
+                <div class="plan-name">Pro Plus</div>
+                <div class="plan-price">100€</div>
+                <div class="plan-duration">60 jours</div>
+                <div class="plan-features">Accès premium</div>
+              </div>
+            </div>
+
+            <select name="type" id="type" class="plan-select" required onchange="updatePlanSelection()">
+          <option value="1">Gratuit — 0 € / 30 jours</option>
+          <option value="2">Pro — 49 € / 30 jours</option>
+          <option value="3">Pro Plus — 100 € / 60 jours</option>
+        </select>
+      </div>
+
+          <!-- Payment Summary -->
+          <div class="payment-summary" id="paymentSummary">
+            <div class="summary-row">
+              <span>Formule sélectionnée :</span>
+              <span id="selectedPlan">Gratuit</span>
+            </div>
+            <div class="summary-row">
+              <span>Prix :</span>
+              <span id="selectedPrice">0€</span>
+            </div>
+            <div class="summary-row">
+              <span>Durée :</span>
+              <span id="selectedDuration">30 jours</span>
+            </div>
+          </div>
+
+          <!-- Card Section -->
+          <div class="card-section" id="cardSection">
+            <h3>
+              <i class="fas fa-credit-card"></i>
+              Informations de paiement
+            </h3>
+
+        <div class="form-group">
+          <label for="card_name">Nom sur la carte</label>
+              <input type="text" id="card_name" name="card_name" placeholder="Jean Dupont">
+        </div>
+
+        <div class="form-group">
+          <label for="card_number">Numéro de la carte</label>
+              <input type="text" id="card_number" name="card_number" maxlength="16" placeholder="1234 5678 9012 3456">
+        </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="exp_date">Date d'expiration</label>
+                <input type="text" id="exp_date" name="exp_date" maxlength="10" placeholder="JJ/MM/AAAA" readonly>
+          </div>
+              <div class="form-group">
+            <label for="cvc">CVC</label>
+                <input type="text" id="cvc" name="cvc" maxlength="4" placeholder="123">
+          </div>
+        </div>
+      </div>
+
+          <div class="payment-buttons">
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-lock"></i>
+              Simuler le paiement
+            </button>
+            <a href="{{ url_for('dashboard.dashboard') }}" class="btn btn-secondary">
+              <i class="fas fa-arrow-left"></i>
+              Retour
+            </a>
+          </div>
+    </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Plan selection handling
+    const planCards = document.querySelectorAll('.plan-card');
+    const planSelect = document.getElementById('type');
+    const cardSection = document.getElementById('cardSection');
+    const paymentSummary = document.getElementById('paymentSummary');
+
+    const plans = {
+      '1': { name: 'Gratuit', price: '0€', duration: '30 jours' },
+      '2': { name: 'Pro', price: '49€', duration: '30 jours' },
+      '3': { name: 'Pro Plus', price: '100€', duration: '60 jours' }
+    };
+
+    function addDays(date, days) {
+      const result = new Date(date);
+      result.setDate(result.getDate() + days);
+      return result;
+    }
+
+    function formatDate(date) {
+      const d = date.getDate().toString().padStart(2, '0');
+      const m = (date.getMonth() + 1).toString().padStart(2, '0');
+      const y = date.getFullYear();
+      return `${d}/${m}/${y}`;
+    }
+
+    function updateExpirationDate() {
+      const selectedValue = planSelect.value;
+      let days = 30;
+      if (selectedValue === '3') days = 60;
+      // Si d'autres plans, adapter ici
+      const today = new Date();
+      const expDate = addDays(today, days);
+      document.getElementById('exp_date').value = formatDate(expDate);
+    }
+
+    function updatePlanSelection() {
+      const selectedValue = planSelect.value;
+      const plan = plans[selectedValue];
+      
+      // Update plan cards
+      planCards.forEach(card => {
+        card.classList.remove('selected');
+        if (card.dataset.value === selectedValue) {
+          card.classList.add('selected');
+        }
+      });
+
+      // Update summary
+      document.getElementById('selectedPlan').textContent = plan.name;
+      document.getElementById('selectedPrice').textContent = plan.price;
+      document.getElementById('selectedDuration').textContent = plan.duration;
+
+      // Toggle card section
+      if (selectedValue === '1') {
+        cardSection.classList.add('hidden');
+        // Remove required attributes
+        document.getElementById('card_name').removeAttribute('required');
+        document.getElementById('card_number').removeAttribute('required');
+        document.getElementById('exp_date').removeAttribute('required');
+        document.getElementById('cvc').removeAttribute('required');
+      } else {
+        cardSection.classList.remove('hidden');
+        // Add required attributes
+        document.getElementById('card_name').setAttribute('required', 'required');
+        document.getElementById('card_number').setAttribute('required', 'required');
+        document.getElementById('exp_date').setAttribute('required', 'required');
+        document.getElementById('cvc').setAttribute('required', 'required');
+      }
+
+      updateExpirationDate();
+    }
+
+    // Plan card click handling
+    planCards.forEach(card => {
+      card.addEventListener('click', () => {
+        planSelect.value = card.dataset.value;
+        updatePlanSelection();
+      });
+    });
+
+    // Initialize
+    updatePlanSelection();
+
+    // Toggle sidebar on mobile
+    function toggleSidebar() {
+      const sidebar = document.querySelector('.sidebar');
+      sidebar.classList.toggle('show');
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      const sidebar = document.getElementById('sidebar');
+      const main = document.querySelector('.main');
+      const edge = document.getElementById('sidebar-edge');
+      edge.addEventListener('mouseenter', function() {
+        sidebar.classList.add('show');
+        if(main) main.classList.add('shift');
+      });
+      sidebar.addEventListener('mouseleave', function() {
+        sidebar.classList.remove('show');
+        if(main) main.classList.remove('shift');
+      });
+      if(main) main.addEventListener('click', function() {
+        sidebar.classList.remove('show');
+        main.classList.remove('shift');
+      });
+    });
+  </script>
+</body>
+</html>

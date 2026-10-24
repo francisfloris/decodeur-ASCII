@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - Décodeur MSC</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+<style>
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #667eea 100%);
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+  }
+
+  .container {
+    display: flex;
+    min-height: 100vh;
+  }
+
+  /* === HEADER === */
+  .header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    z-index: 1000;
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+  }
+
+  .header h1 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: #333;
+    font-weight: 600;
+  }
+
+  .user-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+
+  .user-email {
+    color: #666;
+    font-size: 0.9rem;
+  }
+
+  .user-info .btn-logout {
+    background: linear-gradient(135deg, #ef4444, #f87171);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    text-decoration: none;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: none;
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.08);
+    transition: all 0.2s;
+  }
+  .user-info .btn-logout:hover {
+    background: linear-gradient(135deg, #dc2626, #f87171);
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(239, 68, 68, 0.18);
+  }
+
+
+  /* === SIDEBAR === */
+  .sidebar {
+    width: 280px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    padding: 20px;
+    position: fixed;
+    top: 60px;
+    left: 0;
+    height: calc(100vh - 60px);
+    overflow-y: auto;
+    box-shadow: 2px 0 20px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+    z-index: 999;
+    transform: translateX(-280px); /* Hide by default */
+  }
+
+  .sidebar.show {
+    transform: translateX(0);
+  }
+
+  .sidebar-edge {
+    position: fixed;
+    top: 60px;
+    left: 0;
+    width: 20px;
+    height: calc(100vh - 60px);
+    z-index: 1000;
+    cursor: pointer;
+  }
+
+  .sidebar-section {
+    margin-bottom: 25px;
+  }
+
+  .sidebar-section h3 {
+    color: #333;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 15px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #f0f0f0;
+  }
+
+  .sidebar a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 8px 0;
+    padding: 12px 15px;
+    border-radius: 10px;
+    font-weight: 500;
+    color: white;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+  }
+
+  .sidebar a i {
+    width: 20px;
+    text-align: center;
+  }
+
+  .btn-upload       { background: linear-gradient(135deg, #1d4ed8, #3b82f6); } 
+  .btn-raw          { background: linear-gradient(135deg, #6c757d, #868e96); } 
+  .btn-decode       { background: linear-gradient(135deg, #f97316, #fb923c); } 
+  .btn-histo        { background: linear-gradient(135deg, #0ea5e9, #38bdf8); } 
+  .btn-abon         { background: linear-gradient(135deg, #6366f1, #818cf8); } 
+  .btn-pay          { background: linear-gradient(135deg, #10b981, #34d399); } 
+  .btn-viewfiles    { background: linear-gradient(135deg, #3b82f6, #60a5fa); } 
+  .btn-export-csv   { background: linear-gradient(135deg, #16a34a, #4ade80); } 
+  .btn-export-txt   { background: linear-gradient(135deg, #f43f5e, #fb7185); } 
+  .logout           { background: linear-gradient(135deg, #dc3545, #ef4444); } 
+  .btn-manage-users { background: linear-gradient(135deg, #6b21a8, #a855f7); } 
+
+  .sidebar a:hover {
+    transform: translateX(5px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  }
+
+  /* === MAIN === */
+  .main {
+    margin-left: 0;
+    margin-top: 60px;
+    padding: 30px;
+    flex: 1;
+    transition: margin-left 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .main.shift {
+    margin-left: 280px;
+  }
+
+  /* === QUOTA INFO === */
+  .quota-info {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    padding: 25px;
+    border-radius: 15px;
+    margin-bottom: 30px;
+    width: 100%;
+    max-width: 900px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  }
+
+  .quota-info h3 {
+    margin: 0 0 15px 0;
+    color: #333;
+    font-size: 1.1rem;
+  }
+
+  .quota-details {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+  }
+
+  .quota-text {
+    color: #666;
+    font-size: 0.9rem;
+  }
+
+  .quota-bar {
+    background: #e5e7eb;
+    height: 12px;
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  .quota-progress {
+    height: 100%;
+    background: linear-gradient(90deg, #3b82f6, #60a5fa);
+    border-radius: 6px;
+    transition: width 0.3s ease;
+  }
+
+  /* === FILTRES === */
+  .filters {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 30px;
+    width: 100%;
+    max-width: 900px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  }
+
+  .filters h2 {
+    margin: 0 0 20px 0;
+    font-size: 1.3rem;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .filters .row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+
+  .filter-group {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .filters label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-bottom: 8px;
+    color: #555;
+  }
+
+  .filters input {
+    padding: 12px;
+    border-radius: 8px;
+    border: 2px solid #e5e7eb;
+    font-size: 0.9rem;
+    transition: border-color 0.3s ease;
+  }
+
+  .filters input:focus {
+    outline: none;
+    border-color: #3b82f6;
+  }
+
+  .filter-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #3b82f6, #60a5fa);
+    color: white;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+  }
+
+  .btn-secondary {
+    background: linear-gradient(135deg, #6c757d, #868e96);
+    color: white;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .btn-secondary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(108, 117, 125, 0.4);
+  }
+
+  /* === TABLEAU === */
+  .table-wrapper {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+
+  .table-title {
+    font-size: 1.3rem;
+    color: #333;
+    font-weight: 600;
+  }
+
+  .btn-danger {
+    background: linear-gradient(135deg, #dc3545, #ef4444);
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+  }
+
+  .btn-danger:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4);
+  }
+
+  .table-container {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  table th,
+  table td {
+    padding: 15px 12px;
+    text-align: left;
+    border-bottom: 1px solid #f0f0f0;
+  }
+
+  table th {
+    background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+    font-weight: 600;
+    color: #333;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  table tr:hover {
+    background: rgba(59, 130, 246, 0.05);
+  }
+
+  table td {
+    color: #555;
+    font-size: 0.9rem;
+  }
+
+  /* === PAGINATION === */
+  .pagination-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-top: 30px;
+    flex-wrap: wrap;
+  }
+
+  .page-btn {
+    padding: 10px 16px;
+    font-size: 0.9rem;
+    border: 2px solid #3b82f6;
+    background: white;
+    color: #3b82f6;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+  }
+
+  .page-btn:hover {
+    background: #3b82f6;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+  }
+
+  .page-btn.active {
+    background: #3b82f6;
+    color: white;
+    pointer-events: none;
+  }
+
+  .page-ellipsis {
+    padding: 10px 12px;
+    color: #999;
+    font-weight: 500;
+  }
+
+  /* === RESPONSIVE === */
+  @media (max-width: 768px) {
+    .sidebar {
+      width: 100%;
+      transform: translateX(-100%);
+    }
+    
+    .main {
+      margin-left: 0;
+      padding: 20px;
+    }
+    
+    .filters .row {
+      grid-template-columns: 1fr;
+    }
+    
+    .table-container {
+      overflow-x: auto;
+    }
+    
+    .quota-details {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 10px;
+    }
+  }
+
+  /* === ANIMATIONS === */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .filters, .quota-info, .table-container {
+    animation: fadeIn 0.5s ease;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1><i class="fas fa-chart-line"></i> Dashboard MSC</h1>
+  <div class="user-info">
+    <span class="user-email">{{ session.email }}</span>
+    <a href="{{ url_for('logout') }}" class="btn-logout">
+      <i class="fas fa-sign-out-alt"></i> Déconnexion
+    </a>
+  </div>
+</div>
+
+
+<div class="container">
+  <div class="sidebar-edge" id="sidebar-edge"></div>
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-section">
+      <h3><i class="fas fa-tools"></i> Administration</h3>
+      {% if session.get('role') == 'admin' %}
+      <a href="{{ url_for('admin.admin_panel') }}" class="btn-manage-users">
+        <i class="fas fa-cog"></i> Panel Admin
+      </a>
+      <a href="{{ url_for('admin.admin_utilisateurs') }}" class="btn-manage-users">
+        <i class="fas fa-users"></i> Gérer les utilisateurs
+      </a>
+      {% endif %}
+    </div>
+
+    <div class="sidebar-section">
+      <h3><i class="fas fa-file-upload"></i> Fichiers</h3>
+      <a href="{{ url_for('files.upload') }}" class="btn-upload">
+        <i class="fas fa-upload"></i> Téléverser un fichier
+      </a>
+      <a href="{{ url_for('files.raw') }}" class="btn-raw">
+        <i class="fas fa-database"></i> Lignes brutes
+      </a>
+      {% if session.get('role') == 'admin' %}
+      <a href="{{ url_for('files.fichiers') }}" class="btn-viewfiles">
+        <i class="fas fa-folder-open"></i> Voir les fichiers
+      </a>
+      {% endif %}
+    </div>
+
+    <div class="sidebar-section">
+      <h3><i class="fas fa-cogs"></i> Décodage</h3>
+      <a href="{{ url_for('files.decode') }}" class="btn-decode">
+        <i class="fas fa-play"></i> Lancer le décodage
+      </a>
+      {% if session.get('role') == 'admin' %}
+      <a href="{{ url_for('files.decodeurs') }}" class="btn-histo">
+        <i class="fas fa-history"></i> Historique
+      </a>
+      {% endif %}
+    </div>
+
+    <div class="sidebar-section">
+      <h3><i class="fas fa-credit-card"></i> Abonnements</h3>
+      <a href="{{ url_for('subscription.mes_abonnements') }}" class="btn-abon">
+        <i class="fas fa-list"></i> Mes abonnements
+      </a>
+      <a href="{{ url_for('subscription.mes_paiements') }}" class="btn-pay">
+        <i class="fas fa-receipt"></i> Mes paiements
+      </a>
+    </div>
+
+    <div class="sidebar-section">
+      <h3><i class="fas fa-download"></i> Export</h3>
+      <a href="{{ url_for('dashboard.export_csv') }}" class="btn-export-csv">
+        <i class="fas fa-file-csv"></i> Export CSV
+      </a>
+      <a href="{{ url_for('dashboard.export_txt') }}" class="btn-export-txt">
+        <i class="fas fa-file-alt"></i> Export TXT
+      </a>
+    </div>
+  </div>
+
+  <div class="main" id="main">
+    <!-- Informations sur le quota -->
+    {% if quota_info %}
+    <div class="quota-info">
+      <h3><i class="fas fa-chart-pie"></i> Informations d'abonnement</h3>
+      <div class="quota-details">
+        <div>
+          <div class="quota-text"><strong>Plan :</strong> {{ quota_info.libelle }}</div>
+          <div class="quota-text"><strong>Utilisation :</strong> {{ quota_info.utilise }} / {{ quota_info.max }} décodages</div>
+        </div>
+        <div style="width: 200px;">
+          <div class="quota-bar">
+            <div class="quota-progress" style="width: {{ quota_info.pourcentage }}%"></div>
+          </div>
+          <div class="quota-text" style="text-align: center; margin-top: 5px;">{{ quota_info.pourcentage }}%</div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Filtres de recherche -->
+    <div class="filters">
+      <h2><i class="fas fa-filter"></i> Filtres de recherche</h2>
+      <form method="get" action="{{ url_for('dashboard.dashboard') }}">
+        <div class="row">
+          <div class="filter-group">
+            <label><i class="fas fa-calendar"></i> Date début</label>
+            <input type="date" name="start_date" value="{{ request.args.get('start_date', '') }}">
+          </div>
+          <div class="filter-group">
+            <label><i class="fas fa-calendar"></i> Date fin</label>
+            <input type="date" name="end_date" value="{{ request.args.get('end_date', '') }}">
+          </div>
+          <div class="filter-group">
+            <label><i class="fas fa-phone"></i> Appelant</label>
+            <input type="text" name="appelant" placeholder="Ex : 22507..." value="{{ request.args.get('appelant', '') }}">
+          </div>
+          <div class="filter-group">
+            <label><i class="fas fa-phone"></i> Appelé</label>
+            <input type="text" name="appele" placeholder="Ex : 22507..." value="{{ request.args.get('appele', '') }}">
+          </div>
+          <div class="filter-group">
+            <label><i class="fas fa-server"></i> MSC</label>
+            <input type="text" name="msc" placeholder="Identifiant MSC" value="{{ request.args.get('msc', '') }}">
+          </div>
+          <div class="filter-group">
+            <label><i class="fas fa-clock"></i> Durée min</label>
+            <input type="number" name="min_duree" min="0" placeholder="0" value="{{ request.args.get('min_duree', '') }}">
+          </div>
+        </div>
+        <div class="filter-actions">
+          <button type="submit" class="btn-primary">
+            <i class="fas fa-search"></i> Filtrer
+          </button>
+          <a href="{{ url_for('dashboard.dashboard') }}" class="btn-secondary">
+            <i class="fas fa-undo"></i> Réinitialiser
+          </a>
+        </div>
+      </form>
+    </div>
+
+    <!-- Tableau des données -->
+    <div class="table-wrapper">
+      <div class="table-header">
+        <h3 class="table-title"><i class="fas fa-table"></i> Données décodées</h3>
+        {% if session.get('role') == 'admin' %}
+        <form action="{{ url_for('admin.vider_tableau') }}" method="post" onsubmit="return confirm('Êtes-vous sûr de vouloir VIDER le tableau ? Cette action est irréversible.')">
+          <button type="submit" class="btn-danger">
+            <i class="fas fa-trash"></i> Vider le tableau
+          </button>
+        </form>
+        {% endif %}
+      </div>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th><i class="fas fa-calendar"></i> Date</th>
+              <th><i class="fas fa-tag"></i> Type</th>
+              <th><i class="fas fa-phone"></i> Appelant</th>
+              <th><i class="fas fa-phone"></i> Appelé</th>
+              <th><i class="fas fa-clock"></i> Durée</th>
+              <th><i class="fas fa-map-marker"></i> Origine</th>
+              <th><i class="fas fa-map-marker"></i> Destination</th>
+              <th><i class="fas fa-server"></i> MSC</th>
+              <th><i class="fas fa-file"></i> Fichier</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for appel in appels %}
+            <tr>
+              <td>{{ appel.datelog }}</td>
+              <td>
+                <span class="badge" style="background: {{ 'green' if appel.type_evenement == 'CALL' else 'orange' if appel.type_evenement == 'SMS' else 'blue' }}; color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem;">
+                  {{ appel.type_evenement }}
+                </span>
+              </td>
+              <td>{{ appel.appelant }}</td>
+              <td>{{ appel.appele }}</td>
+              <td>{{ appel.duree or "—" }}</td>
+              <td>{{ appel.cellule_origine }}</td>
+              <td>{{ appel.cellule_destination }}</td>
+              <td>{{ appel.msc }}</td>
+              <td>{{ appel.fichier_source }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="pagination-container">
+        {% if page > 1 %}
+          {% set args = request.args.to_dict() %}
+          {% set args = args.update({'page': page-1}) or args %}
+          <a href="{{ url_for('dashboard.dashboard', **args) }}" class="page-btn">
+            <i class="fas fa-chevron-left"></i>
+          </a>
+        {% endif %}
+
+        {% for p in range(1, total_pages + 1) %}
+          {% if p == page %}
+            <span class="page-btn active">{{ p }}</span>
+          {% elif p == 1 or p == total_pages or (p >= page - 2 and p <= page + 2) %}
+            {% set args = request.args.to_dict() %}
+            {% set args = args.update({'page': p}) or args %}
+            <a href="{{ url_for('dashboard.dashboard', **args) }}" class="page-btn">{{ p }}</a>
+          {% elif p == 2 and page > 4 %}
+            <span class="page-ellipsis">...</span>
+          {% elif p == total_pages - 1 and page < total_pages - 3 %}
+            <span class="page-ellipsis">...</span>
+          {% endif %}
+        {% endfor %}
+
+        {% if page < total_pages %}
+          {% set args = request.args.to_dict() %}
+          {% set args = args.update({'page': page+1}) or args %}
+          <a href="{{ url_for('dashboard.dashboard', **args) }}" class="page-btn">
+            <i class="fas fa-chevron-right"></i>
+          </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Animation pour les éléments au chargement
+  const animatedElements = document.querySelectorAll('.filters, .quota-info, .table-container');
+  animatedElements.forEach((el, index) => {
+    el.style.animationDelay = `${index * 0.1}s`;
+  });
+
+  document.addEventListener('DOMContentLoaded', function() {
+    const sidebar = document.getElementById('sidebar');
+    const main = document.getElementById('main');
+    const edge = document.getElementById('sidebar-edge');
+
+    // Show sidebar on hover over edge
+    edge.addEventListener('mouseenter', function() {
+      sidebar.classList.add('show');
+      main.classList.add('shift');
+    });
+    // Hide sidebar when mouse leaves sidebar
+    sidebar.addEventListener('mouseleave', function() {
+      sidebar.classList.remove('show');
+      main.classList.remove('shift');
+    });
+    // Optional: Hide sidebar when clicking on main content
+    main.addEventListener('click', function() {
+      sidebar.classList.remove('show');
+      main.classList.remove('shift');
+    });
+  });
+</script>
+</body>
+</html>

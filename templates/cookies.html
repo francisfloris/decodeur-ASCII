@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Politique des cookies - Décodeur MSC</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      color: #333;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .header {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 30px;
+      border-radius: 15px;
+      margin-bottom: 30px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+
+    .header h1 {
+      color: #667eea;
+      font-size: 2.5rem;
+      margin-bottom: 15px;
+    }
+
+    .header p {
+      color: #666;
+      font-size: 1.1rem;
+    }
+
+    .cookie-section {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 30px;
+      border-radius: 15px;
+      margin-bottom: 30px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .cookie-section h2 {
+      color: #667eea;
+      font-size: 1.8rem;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #667eea;
+      padding-bottom: 10px;
+    }
+
+    .back-btn {
+      display: inline-block;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 12px 25px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      margin-bottom: 20px;
+      transition: all 0.3s ease;
+    }
+
+    .back-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+    }
+
+    .cookie-content {
+      line-height: 1.8;
+      color: #333;
+    }
+
+    .cookie-content p {
+      margin-bottom: 15px;
+    }
+
+    .cookie-content ul {
+      margin: 15px 0;
+      padding-left: 20px;
+    }
+
+    .cookie-content li {
+      margin-bottom: 8px;
+    }
+
+    .cookie-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+      background: #f8fafc;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .cookie-table th,
+    .cookie-table td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .cookie-table th {
+      background: #667eea;
+      color: white;
+      font-weight: 600;
+    }
+
+    .cookie-table tr:hover {
+      background: #f1f5f9;
+    }
+
+    .cookie-type {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+
+    .type-necessary { background: #10b981; color: white; }
+    .type-functional { background: #3b82f6; color: white; }
+    .type-analytics { background: #f59e0b; color: white; }
+    .type-marketing { background: #ef4444; color: white; }
+
+    .preferences-panel {
+      background: #f8fafc;
+      border: 2px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 25px;
+      margin: 20px 0;
+    }
+
+    .preferences-panel h3 {
+      color: #667eea;
+      margin-bottom: 20px;
+    }
+
+    .cookie-option {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px;
+      background: white;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .cookie-option-info h4 {
+      color: #333;
+      margin-bottom: 5px;
+    }
+
+    .cookie-option-info p {
+      color: #666;
+      font-size: 0.9rem;
+      margin: 0;
+    }
+
+    .toggle-switch {
+      position: relative;
+      width: 50px;
+      height: 24px;
+      background: #e2e8f0;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    .toggle-switch.active {
+      background: #667eea;
+    }
+
+    .toggle-switch::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 20px;
+      height: 20px;
+      background: white;
+      border-radius: 50%;
+      transition: transform 0.3s ease;
+    }
+
+    .toggle-switch.active::after {
+      transform: translateX(26px);
+    }
+
+    .save-btn {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 12px 25px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .save-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+    }
+
+    .info-box {
+      background: #e0f2fe;
+      border: 2px solid #0288d1;
+      border-radius: 8px;
+      padding: 15px;
+      margin: 20px 0;
+    }
+
+    .info-box h4 {
+      color: #0277bd;
+      margin-bottom: 10px;
+    }
+
+    .info-box p {
+      color: #01579b;
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="{{ url_for('home') }}" class="back-btn">
+      <i class="fas fa-arrow-left"></i> Retour à l'accueil
+    </a>
+
+    <div class="header">
+      <h1><i class="fas fa-cookie-bite"></i> Politique des cookies</h1>
+      <p>Dernière mise à jour : 30 juillet 2025</p>
+    </div>
+
+    <div class="cookie-section">
+      <div class="cookie-content">
+        <h2><i class="fas fa-info-circle"></i> Qu'est-ce qu'un cookie ?</h2>
+        <p>Un cookie est un petit fichier texte stocké sur votre appareil lorsque vous visitez un site web. Les cookies nous aident à améliorer votre expérience en mémorisant vos préférences et en analysant l'utilisation du site.</p>
+
+        <div class="info-box">
+          <h4><i class="fas fa-lightbulb"></i> Bon à savoir</h4>
+          <p>Vous pouvez contrôler et gérer vos préférences de cookies à tout moment via les paramètres de votre navigateur ou en utilisant notre panneau de préférences ci-dessous.</p>
+        </div>
+
+        <h2><i class="fas fa-list"></i> Types de cookies que nous utilisons</h2>
+        
+        <table class="cookie-table">
+          <thead>
+            <tr>
+              <th>Type de cookie</th>
+              <th>Finalité</th>
+              <th>Durée</th>
+              <th>Obligatoire</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="cookie-type type-necessary">Nécessaires</span></td>
+              <td>Fonctionnement du site, sécurité, authentification</td>
+              <td>Session</td>
+              <td>Oui</td>
+            </tr>
+            <tr>
+              <td><span class="cookie-type type-functional">Fonctionnels</span></td>
+              <td>Préférences utilisateur, personnalisation</td>
+              <td>1 an</td>
+              <td>Non</td>
+            </tr>
+            <tr>
+              <td><span class="cookie-type type-analytics">Analytiques</span></td>
+              <td>Analyse de l'utilisation, amélioration du service</td>
+              <td>2 ans</td>
+              <td>Non</td>
+            </tr>
+            <tr>
+              <td><span class="cookie-type type-marketing">Marketing</span></td>
+              <td>Publicités personnalisées, retargeting</td>
+              <td>1 an</td>
+              <td>Non</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h2><i class="fas fa-cogs"></i> Gérer vos préférences</h2>
+        
+        <div class="preferences-panel">
+          <h3><i class="fas fa-sliders-h"></i> Panneau de préférences</h3>
+          
+          <div class="cookie-option">
+            <div class="cookie-option-info">
+              <h4>Cookies nécessaires</h4>
+              <p>Indispensables au fonctionnement du site. Ne peuvent pas être désactivés.</p>
+            </div>
+            <div class="toggle-switch active" style="opacity: 0.5; cursor: not-allowed;">
+              <input type="checkbox" checked disabled>
+            </div>
+          </div>
+
+          <div class="cookie-option">
+            <div class="cookie-option-info">
+              <h4>Cookies fonctionnels</h4>
+              <p>Améliorent votre expérience en mémorisant vos préférences.</p>
+            </div>
+            <div class="toggle-switch" id="functional-toggle">
+              <input type="checkbox" id="functional-checkbox">
+            </div>
+          </div>
+
+          <div class="cookie-option">
+            <div class="cookie-option-info">
+              <h4>Cookies analytiques</h4>
+              <p>Nous aident à comprendre comment vous utilisez le site.</p>
+            </div>
+            <div class="toggle-switch" id="analytics-toggle">
+              <input type="checkbox" id="analytics-checkbox">
+            </div>
+          </div>
+
+          <div class="cookie-option">
+            <div class="cookie-option-info">
+              <h4>Cookies marketing</h4>
+              <p>Utilisés pour afficher des publicités pertinentes.</p>
+            </div>
+            <div class="toggle-switch" id="marketing-toggle">
+              <input type="checkbox" id="marketing-checkbox">
+            </div>
+          </div>
+
+          <button class="save-btn" onclick="savePreferences()">
+            <i class="fas fa-save"></i> Sauvegarder les préférences
+          </button>
+        </div>
+
+        <h2><i class="fas fa-browser"></i> Gestion via votre navigateur</h2>
+        <p>Vous pouvez également gérer les cookies directement dans les paramètres de votre navigateur :</p>
+        
+        <ul>
+          <li><strong>Chrome :</strong> Paramètres → Confidentialité et sécurité → Cookies</li>
+          <li><strong>Firefox :</strong> Options → Confidentialité et sécurité → Cookies</li>
+          <li><strong>Safari :</strong> Préférences → Confidentialité → Cookies</li>
+          <li><strong>Edge :</strong> Paramètres → Cookies et autorisations de site</li>
+        </ul>
+
+        <h2><i class="fas fa-exclamation-triangle"></i> Impact de la désactivation</h2>
+        <p>La désactivation de certains cookies peut affecter le fonctionnement du site :</p>
+        <ul>
+          <li><strong>Cookies nécessaires :</strong> Le site ne fonctionnera pas correctement</li>
+          <li><strong>Cookies fonctionnels :</strong> Vos préférences ne seront pas mémorisées</li>
+          <li><strong>Cookies analytiques :</strong> Nous ne pourrons pas améliorer le service</li>
+          <li><strong>Cookies marketing :</strong> Les publicités seront moins pertinentes</li>
+        </ul>
+
+        <h2><i class="fas fa-question-circle"></i> Questions fréquentes</h2>
+        
+        <div style="background: #f8fafc; padding: 20px; border-radius: 10px; margin: 20px 0;">
+          <h4 style="color: #333; margin-bottom: 10px;">Comment supprimer les cookies ?</h4>
+          <p style="color: #666;">Vous pouvez supprimer les cookies via les paramètres de votre navigateur ou en utilisant les outils de développement (F12 → Application → Cookies).</p>
+        </div>
+
+        <div style="background: #f8fafc; padding: 20px; border-radius: 10px; margin: 20px 0;">
+          <h4 style="color: #333; margin-bottom: 10px;">Les cookies sont-ils sécurisés ?</h4>
+          <p style="color: #666;">Oui, nos cookies sont sécurisés et ne contiennent aucune information sensible. Ils sont chiffrés et ne peuvent être lus que par notre serveur.</p>
+        </div>
+
+        <div style="background: #f8fafc; padding: 20px; border-radius: 10px; margin: 20px 0;">
+          <h4 style="color: #333; margin-bottom: 10px;">Puis-je refuser tous les cookies ?</h4>
+          <p style="color: #666;">Vous pouvez refuser les cookies non nécessaires, mais les cookies essentiels au fonctionnement du site ne peuvent pas être désactivés.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Charger les préférences sauvegardées
+    document.addEventListener('DOMContentLoaded', function() {
+      loadPreferences();
+    });
+
+    // Gestion des toggles
+    document.querySelectorAll('.toggle-switch').forEach(toggle => {
+      toggle.addEventListener('click', function() {
+        if (!this.style.opacity || this.style.opacity !== '0.5') {
+          this.classList.toggle('active');
+        }
+      });
+    });
+
+    function loadPreferences() {
+      const functional = localStorage.getItem('cookie-functional') === 'true';
+      const analytics = localStorage.getItem('cookie-analytics') === 'true';
+      const marketing = localStorage.getItem('cookie-marketing') === 'true';
+
+      if (functional) {
+        document.getElementById('functional-toggle').classList.add('active');
+        document.getElementById('functional-checkbox').checked = true;
+      }
+      if (analytics) {
+        document.getElementById('analytics-toggle').classList.add('active');
+        document.getElementById('analytics-checkbox').checked = true;
+      }
+      if (marketing) {
+        document.getElementById('marketing-toggle').classList.add('active');
+        document.getElementById('marketing-checkbox').checked = true;
+      }
+    }
+
+    function savePreferences() {
+      const functional = document.getElementById('functional-checkbox').checked;
+      const analytics = document.getElementById('analytics-checkbox').checked;
+      const marketing = document.getElementById('marketing-checkbox').checked;
+
+      localStorage.setItem('cookie-functional', functional);
+      localStorage.setItem('cookie-analytics', analytics);
+      localStorage.setItem('cookie-marketing', marketing);
+
+      // Simulation de sauvegarde
+      const btn = document.querySelector('.save-btn');
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sauvegarde...';
+      btn.disabled = true;
+
+      setTimeout(() => {
+        btn.innerHTML = '<i class="fas fa-check"></i> Préférences sauvegardées !';
+        setTimeout(() => {
+          btn.innerHTML = originalText;
+          btn.disabled = false;
+        }, 2000);
+      }, 1000);
+    }
+  </script>
+</body>
+</html> 

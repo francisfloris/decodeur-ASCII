@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Connexion - Décodeur MSC</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #333;
+      padding: 20px;
+    }
+
+    .container {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 50px 40px;
+      border-radius: 20px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 400px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .container::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #667eea, #764ba2);
+    }
+
+    .logo {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .logo i {
+      font-size: 48px;
+      color: #667eea;
+      margin-bottom: 10px;
+    }
+
+    .form h1 {
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 28px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .form-input {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .input-group {
+      position: relative;
+    }
+
+    .input-group i {
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #667eea;
+      font-size: 16px;
+    }
+
+    .form-input input[type="email"],
+    .form-input input[type="password"] {
+      width: 100%;
+      padding: 15px 15px 15px 45px;
+      border: 2px solid #e5e7eb;
+      border-radius: 10px;
+      background: #f8f9fa;
+      color: #333;
+      font-size: 16px;
+      font-family: 'Poppins', sans-serif;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+
+    .form-input input[type="email"]:focus,
+    .form-input input[type="password"]:focus {
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      background: white;
+    }
+
+    .form-input input::placeholder {
+      color: #9ca3af;
+    }
+
+    .remember-me {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin: 18px 0 10px 0;
+      width: 100%;
+    }
+
+    .remember-me.error {
+      border: 2px solid #dc3545;
+      background-color: #fef2f2;
+    }
+
+    .remember-me input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: #667eea;
+      cursor: pointer;
+    }
+
+    .remember-me label {
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .required {
+      color: #dc3545;
+      font-weight: 600;
+    }
+
+    .error-message {
+      color: #dc3545;
+      font-size: 12px;
+      margin-top: 5px;
+      display: none;
+      font-weight: 500;
+    }
+
+    .reset-pass {
+      text-decoration: none;
+      text-align: center;
+      font-size: 14px;
+      color: #667eea;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      display: block;
+      padding: 10px;
+      border-radius: 8px;
+    }
+
+    .reset-pass:hover {
+      background: rgba(102, 126, 234, 0.1);
+      color: #5a67d8;
+    }
+
+    #submit-btn {
+      padding: 15px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 600;
+      font-family: 'Poppins', sans-serif;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+
+    #submit-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    #submit-btn:active {
+      transform: translateY(0);
+    }
+
+    .signup-link {
+      text-align: center;
+      margin-top: 25px;
+      padding-top: 20px;
+      border-top: 1px solid #e5e7eb;
+    }
+
+    .signup-link a {
+      font-size: 14px;
+      color: #667eea;
+      text-decoration: none;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      display: inline-block;
+      padding: 8px 16px;
+      border-radius: 6px;
+    }
+
+    .signup-link a:hover {
+      background: rgba(102, 126, 234, 0.1);
+      color: #5a67d8;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      margin-top: 10px;
+      font-size: 13px;
+      color: #6b7280;
+      text-decoration: none;
+      transition: all 0.3s ease;
+    }
+
+    .back-link:hover {
+      color: #667eea;
+    }
+    
+    .alert {
+      padding: 15px;
+      margin-bottom: 25px;
+      border-radius: 10px;
+      text-align: center;
+      font-size: 14px;
+      font-weight: 500;
+      border: none;
+    }
+    
+    .alert-danger {
+      background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+      color: #dc2626;
+      border-left: 4px solid #dc2626;
+    }
+    
+    .alert-success {
+      background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+      color: #16a34a;
+      border-left: 4px solid #16a34a;
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        padding: 40px 30px;
+        margin: 10px;
+      }
+      
+      .form h1 {
+        font-size: 24px;
+      }
+      
+      .logo i {
+        font-size: 40px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container" role="main" aria-label="Formulaire de connexion">
+    <div class="form">
+      <div class="logo">
+        <i class="fas fa-shield-alt"></i>
+        <h1>Connexion</h1>
+      </div>
+      
+      <!-- Affichage des messages flash -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="alert alert-{{ 'danger' if category == 'danger' else 'success' }}">
+              <i class="fas fa-{{ 'exclamation-triangle' if category == 'danger' else 'check-circle' }}"></i>
+              {{ message }}
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <form method="post" action="" class="form-input" novalidate>
+        <div class="input-group">
+          <i class="fas fa-envelope"></i>
+          <input type="email" name="email" placeholder="Votre email" id="email" required aria-required="true" />
+        </div>
+        
+        <div class="input-group">
+          <i class="fas fa-lock"></i>
+          <input type="password" name="password" placeholder="Votre mot de passe" id="password" required aria-required="true" />
+        </div>
+        
+        <div class="remember-me" id="remember-container">
+          <input type="checkbox" name="remember" id="remember-me" required aria-required="true" />
+          <label for="remember-me">
+            Se souvenir de moi <span class="required"></span>
+          </label>
+        </div>
+        
+        <div class="error-message" id="remember-error">
+          <i class="fas fa-exclamation-circle"></i>
+          Vous devez accepter de vous souvenir de votre connexion.
+        </div>
+        
+        <a href="{{ url_for('auth.reset_password') }}" class="reset-pass">
+          <i class="fas fa-key"></i> Mot de passe oublié ?
+        </a>
+        
+        <button type="submit" id="submit-btn" disabled>
+          <i class="fas fa-sign-in-alt"></i> Se connecter
+        </button>
+        
+        <div class="signup-link">
+          <a href="{{ url_for('auth.signup') }}" title="Créer un compte">
+            <i class="fas fa-user-plus"></i> Créer un compte
+          </a>
+          <br>
+          <a href="{{ url_for('home') }}" class="back-link">
+            <i class="fas fa-arrow-left"></i> Retour à l'accueil
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const form = document.querySelector('.form-input');
+      const rememberContainer = document.getElementById('remember-container');
+      const rememberError = document.getElementById('remember-error');
+      const rememberCheckbox = document.getElementById('remember-me');
+      const submitBtn = document.getElementById('submit-btn');
+
+      function toggleSubmit() {
+        const allowed = rememberCheckbox.checked;
+        submitBtn.disabled = !allowed;
+        submitBtn.classList.toggle('disabled', !allowed);
+      }
+
+      toggleSubmit();
+
+      form.addEventListener('submit', function(e) {
+        if (!rememberCheckbox.checked) {
+          e.preventDefault();
+          rememberContainer.classList.add('error');
+          rememberError.style.display = 'block';
+          rememberCheckbox.focus();
+        } else {
+          rememberContainer.classList.remove('error');
+          rememberError.style.display = 'none';
+        }
+      });
+
+      rememberCheckbox.addEventListener('change', function() {
+        if (this.checked) {
+          rememberContainer.classList.remove('error');
+          rememberError.style.display = 'none';
+        }
+        toggleSubmit();
+      });
+    });
+  </script>
+</body>
+</html>

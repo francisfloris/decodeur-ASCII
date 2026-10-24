@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Inscription - Décodeur MSC</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #333;
+      padding: 20px;
+    }
+
+    .container {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 50px 40px;
+      border-radius: 20px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 400px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .container::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #667eea, #764ba2);
+    }
+
+    .logo {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .logo i {
+      font-size: 48px;
+      color: #667eea;
+      margin-bottom: 10px;
+    }
+
+    .form h1 {
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 28px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .form-input {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .input-group {
+      position: relative;
+    }
+
+    .input-group i {
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #667eea;
+      font-size: 16px;
+    }
+
+    .form-input input[type="text"],
+    .form-input input[type="email"],
+    .form-input input[type="password"] {
+      width: 100%;
+      padding: 15px 15px 15px 45px;
+      border: 2px solid #e5e7eb;
+      border-radius: 10px;
+      background: #f8f9fa;
+      color: #333;
+      font-size: 16px;
+      font-family: 'Poppins', sans-serif;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+
+    .form-input input[type="text"]:focus,
+    .form-input input[type="email"]:focus,
+    .form-input input[type="password"]:focus {
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      background: white;
+    }
+
+    .form-input input::placeholder {
+      color: #9ca3af;
+    }
+
+    .message-inline {
+      font-size: 12px;
+      margin-top: -10px;
+      padding-left: 5px;
+    }
+
+    .terms-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin: 18px 0 10px 0;
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+    }
+
+    .terms-container.error {
+      border: 2px solid #dc3545;
+      background-color: #fef2f2;
+    }
+
+    .terms-container input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: #667eea;
+      cursor: pointer;
+    }
+
+    .terms-container label {
+      cursor: pointer;
+      user-select: none;
+      font-size: 14px;
+      color: #333;
+    }
+
+    .terms-container a {
+      color: #667eea;
+      text-decoration: none;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+
+    .terms-container a:hover {
+      color: #5a67d8;
+      text-decoration: underline;
+    }
+
+    .required {
+      color: #dc3545;
+      font-weight: 600;
+    }
+
+    .error-message {
+      color: #dc3545;
+      font-size: 12px;
+      margin-top: 5px;
+      display: none;
+      font-weight: 500;
+    }
+
+    #submit-btn {
+      padding: 15px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 600;
+      font-family: 'Poppins', sans-serif;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+      width: 100%;
+    }
+
+    #submit-btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    #submit-btn:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    #submit-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .signup-link {
+      text-align: center;
+      margin-top: 25px;
+      padding-top: 20px;
+      border-top: 1px solid #e5e7eb;
+    }
+
+    .signup-link a {
+      font-size: 14px;
+      color: #667eea;
+      text-decoration: none;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      display: inline-block;
+      padding: 8px 16px;
+      border-radius: 6px;
+    }
+
+    .signup-link a:hover {
+      background: rgba(102, 126, 234, 0.1);
+      color: #5a67d8;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      margin-top: 10px;
+      font-size: 13px;
+      color: #6b7280;
+      text-decoration: none;
+      transition: all 0.3s ease;
+    }
+
+    .back-link:hover {
+      color: #667eea;
+    }
+    
+    .alert {
+      padding: 15px;
+      margin-bottom: 25px;
+      border-radius: 10px;
+      text-align: center;
+      font-size: 14px;
+      font-weight: 500;
+      border: none;
+    }
+    
+    .alert-danger {
+      background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+      color: #dc2626;
+      border-left: 4px solid #dc2626;
+    }
+    
+    .alert-success {
+      background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+      color: #16a34a;
+      border-left: 4px solid #16a34a;
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        padding: 40px 30px;
+        margin: 10px;
+      }
+      
+      .form h1 {
+        font-size: 24px;
+      }
+      
+      .logo i {
+        font-size: 40px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container" role="main" aria-label="Formulaire d'inscription">
+    <div class="form">
+      <div class="logo">
+        <i class="fas fa-user-plus"></i>
+        <h1>Créer un compte</h1>
+      </div>
+      
+      <!-- Affichage des messages flash -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="alert alert-{{ 'danger' if category == 'danger' else 'success' }}">
+              <i class="fas fa-{{ 'exclamation-triangle' if category == 'danger' else 'check-circle' }}"></i>
+              {{ message }}
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <form method="post" action="" class="form-input" novalidate>
+        <div class="input-group">
+          <i class="fas fa-user"></i>
+          <input type="text" name="username" placeholder="Nom d'utilisateur" id="username" required aria-required="true" />
+        </div>
+
+        <div class="input-group">
+          <i class="fas fa-envelope"></i>
+          <input type="email" name="email" placeholder="Votre email" id="email" required aria-required="true" />
+        </div>
+
+        <div class="input-group">
+          <i class="fas fa-lock"></i>
+          <input type="password" name="password" placeholder="Mot de passe" id="password" required aria-required="true" />
+        </div>
+        <div class="message-inline" id="password-strength"></div>
+
+        <div class="input-group">
+          <i class="fas fa-lock"></i>
+          <input type="password" name="confirm_password" placeholder="Confirmer le mot de passe" id="confirm_password" required aria-required="true" />
+        </div>
+        <div class="message-inline" id="password-match"></div>
+
+        <div class="terms-container" id="terms-container">
+          <input type="checkbox" name="terms" id="terms" required aria-required="true" />
+          <label for="terms">
+            J'accepte les <a href="{{ url_for('conditions_utilisation') }}" target="_blank">conditions</a> et la <a href="{{ url_for('politique_confidentialite') }}" target="_blank">confidentialité</a>
+          </label>
+        </div>
+        
+        <div class="error-message" id="terms-error">
+          <i class="fas fa-exclamation-circle"></i>
+          Vous devez accepter les conditions d'utilisation.
+        </div>
+        
+        <button type="submit" id="submit-btn" disabled>
+          <i class="fas fa-user-plus"></i> Créer mon compte
+        </button>
+        
+        <div class="signup-link">
+          <a href="{{ url_for('auth.login') }}" title="Se connecter">
+            <i class="fas fa-sign-in-alt"></i> Se connecter
+          </a>
+          <br>
+          <a href="{{ url_for('home') }}" class="back-link">
+            <i class="fas fa-arrow-left"></i> Retour à l'accueil
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const password = document.getElementById('password');
+      const confirmPassword = document.getElementById('confirm_password');
+      const passwordStrength = document.getElementById('password-strength');
+      const passwordMatch = document.getElementById('password-match');
+      const submitBtn = document.getElementById('submit-btn');
+      const termsCheckbox = document.getElementById('terms');
+      const termsContainer = document.getElementById('terms-container');
+      const termsError = document.getElementById('terms-error');
+      const form = document.querySelector('.form-input');
+
+      function checkPasswordStrength(value) {
+        let strength = 0;
+        if (value.length >= 8) strength++;
+        if (/[a-z]/.test(value)) strength++;
+        if (/[A-Z]/.test(value)) strength++;
+        if (/[0-9]/.test(value)) strength++;
+        if (/[^A-Za-z0-9]/.test(value)) strength++;
+
+        if (strength < 3) {
+          passwordStrength.innerHTML = '<i class="fas fa-times-circle"></i> Mot de passe faible';
+          passwordStrength.style.color = '#dc2626';
+        } else if (strength < 5) {
+          passwordStrength.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Mot de passe moyen';
+          passwordStrength.style.color = '#FFA000';
+        } else {
+          passwordStrength.innerHTML = '<i class="fas fa-check-circle"></i> Mot de passe fort';
+          passwordStrength.style.color = '#16a34a';
+        }
+      }
+
+      function checkPasswordMatch() {
+        if (!confirmPassword.value) {
+          passwordMatch.innerHTML = '';
+          return;
+        }
+        if (password.value === confirmPassword.value) {
+          passwordMatch.innerHTML = '<i class="fas fa-check-circle"></i> Les mots de passe correspondent';
+          passwordMatch.style.color = '#16a34a';
+        } else {
+          passwordMatch.innerHTML = '<i class="fas fa-times-circle"></i> Les mots de passe ne correspondent pas';
+          passwordMatch.style.color = '#dc2626';
+        }
+      }
+
+      function validateForm() {
+        const isMatch = password.value && password.value === confirmPassword.value;
+        const isTerms = termsCheckbox.checked;
+        const isValid = isMatch && isTerms && password.value.length >= 8;
+        submitBtn.disabled = !isValid;
+      }
+
+      password.addEventListener('input', function() {
+        checkPasswordStrength(this.value);
+        checkPasswordMatch();
+        validateForm();
+      });
+
+      confirmPassword.addEventListener('input', function() {
+        checkPasswordMatch();
+        validateForm();
+      });
+
+      termsCheckbox.addEventListener('change', function() {
+        if (this.checked) {
+          termsContainer.classList.remove('error');
+          termsError.style.display = 'none';
+        }
+        validateForm();
+      });
+
+      form.addEventListener('submit', function(e) {
+        if (!termsCheckbox.checked) {
+          e.preventDefault();
+          termsContainer.classList.add('error');
+          termsError.style.display = 'block';
+          termsCheckbox.focus();
+        } else {
+          termsContainer.classList.remove('error');
+          termsError.style.display = 'none';
+        }
+      });
+
+      validateForm();
+    });
+  </script>
+</body>
+</html>

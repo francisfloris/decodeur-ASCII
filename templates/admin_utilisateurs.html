@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestion des Utilisateurs - Décodeur MSC</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%,  #667eea 0% 100%);
+      min-height: 100vh;
+      color: #333;
+    }
+
+    .container {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* Header */
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      z-index: 1000;
+      box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 1.5rem;
+      color: #333;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .user-email {
+      color: #666;
+      font-size: 0.9rem;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 280px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 20px;
+      position: fixed;
+      top: 60px;
+      left: 0;
+      height: calc(100vh - 60px);
+      overflow-y: auto;
+      box-shadow: 2px 0 20px rgba(0, 0, 0, 0.1);
+      z-index: 999;
+      transform: translateX(-280px);
+      transition: transform 0.3s ease;
+    }
+
+    .sidebar.show {
+      transform: translateX(0);
+    }
+
+    .sidebar-section {
+      margin-bottom: 25px;
+    }
+
+    .sidebar-section h3 {
+      color: #333;
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 15px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #f0f0f0;
+    }
+
+    .sidebar a {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 8px 0;
+      padding: 12px 15px;
+      border-radius: 10px;
+      font-weight: 500;
+      color: white;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      font-size: 0.9rem;
+    }
+
+    .sidebar a i {
+      width: 20px;
+      text-align: center;
+    }
+
+    .btn-dashboard { background: linear-gradient(135deg, #3b82f6, #60a5fa); }
+    .btn-users { background: linear-gradient(135deg, #8b5cf6, #a78bfa); }
+    .btn-stats { background: linear-gradient(135deg, #10b981, #34d399); }
+    .btn-settings { background: linear-gradient(135deg, #f59e0b, #fbbf24); }
+    .btn-logout { background: linear-gradient(135deg, #ef4444, #f87171); }
+
+    .sidebar a:hover {
+      transform: translateX(5px);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Main Content */
+    .main {
+      margin-left: 280px;
+      margin-top: 60px;
+      padding: 30px;
+      flex: 1;
+    }
+
+    .page-title {
+      font-size: 2rem;
+      font-weight: 700;
+      color: white;
+      margin-bottom: 30px;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Search and Filters */
+    .controls {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 25px;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      margin-bottom: 30px;
+    }
+
+    .controls h2 {
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .search-filters {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      align-items: end;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .form-group label {
+      font-weight: 500;
+      color: #555;
+      font-size: 0.9rem;
+    }
+
+    .form-group input,
+    .form-group select {
+      padding: 12px 15px;
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-family: 'Poppins', sans-serif;
+      transition: all 0.3s ease;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .btn-search {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 0.9rem;
+    }
+
+    .btn-search:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+    }
+
+    /* Users Table */
+    .users-container {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+
+    .table-header {
+      padding: 20px 25px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .table-header h2 {
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: #333;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .table-container {
+      overflow-x: auto;
+    }
+
+    .users-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .users-table th {
+      background: #f8fafc;
+      padding: 15px 20px;
+      text-align: left;
+      font-weight: 600;
+      color: #333;
+      font-size: 0.9rem;
+      border-bottom: 2px solid #e5e7eb;
+    }
+
+    .users-table td {
+      padding: 15px 20px;
+      border-bottom: 1px solid #f0f0f0;
+      font-size: 0.9rem;
+    }
+
+    .users-table tr:hover {
+      background: #f8fafc;
+    }
+
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .user-info-cell {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .user-details h4 {
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 4px;
+    }
+
+    .user-details p {
+      color: #666;
+      font-size: 0.8rem;
+    }
+
+    .status-badge {
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .status-active {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .status-inactive {
+      background: #fee2e2;
+      color: #dc2626;
+    }
+
+    .role-badge {
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .role-admin {
+      background: linear-gradient(135deg, #ef4444, #f87171);
+      color: white;
+    }
+
+    .role-user {
+      background: linear-gradient(135deg, #3b82f6, #60a5fa);
+      color: white;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-action {
+      padding: 8px 12px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .btn-edit {
+      background: linear-gradient(135deg, #f59e0b, #fbbf24);
+      color: white;
+    }
+
+    .btn-delete {
+      background: linear-gradient(135deg, #ef4444, #f87171);
+      color: white;
+    }
+
+    .btn-action:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Pagination */
+    .pagination {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      padding: 25px;
+      border-top: 1px solid #f0f0f0;
+    }
+
+    .pagination a,
+    .pagination span {
+      padding: 10px 15px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+
+    .pagination a {
+      background: #f8fafc;
+      color: #333;
+      border: 1px solid #e5e7eb;
+    }
+
+    .pagination a:hover {
+      background: #667eea;
+      color: white;
+      border-color: #667eea;
+    }
+
+    .pagination .current {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: 1px solid #667eea;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .sidebar {
+        width: 100%;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+      }
+
+      .sidebar.show {
+        transform: translateX(0);
+      }
+
+      .main {
+        margin-left: 0;
+        padding: 20px;
+      }
+
+      .search-filters {
+        grid-template-columns: 1fr;
+      }
+
+      .users-table {
+        font-size: 0.8rem;
+      }
+
+      .users-table th,
+      .users-table td {
+        padding: 10px 15px;
+      }
+
+      .action-buttons {
+        flex-direction: column;
+        gap: 5px;
+      }
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .controls, .users-container {
+      animation: fadeInUp 0.6s ease forwards;
+    }
+
+    .sidebar-edge {
+      position: fixed;
+      top: 60px;
+      left: 0;
+      width: 20px;
+      height: calc(100vh - 60px);
+      z-index: 1000;
+      cursor: pointer;
+    }
+
+    .main.shift {
+      margin-left: 280px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <div class="header">
+    <h1>
+      <i class="fas fa-users"></i>
+      Gestion des Utilisateurs
+    </h1>
+    <div class="user-info">
+      <span class="user-email">{{ session.email }}</span>
+      <a href="{{ url_for('logout') }}" class="btn-action btn-delete" style="padding: 8px 16px; font-size: 0.8rem;">
+        <i class="fas fa-sign-out-alt"></i> Déconnexion
+      </a>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- Sidebar -->
+    <div class="sidebar-edge" id="sidebar-edge"></div>
+    <div class="sidebar" id="sidebar">
+      <div class="sidebar-section">
+        <h3><i class="fas fa-tachometer-alt"></i> Navigation</h3>
+        <a href="{{ url_for('dashboard.dashboard') }}" class="btn-dashboard">
+          <i class="fas fa-chart-line"></i> Dashboard
+        </a>
+        <a href="{{ url_for('admin.admin_utilisateurs') }}" class="btn-users">
+          <i class="fas fa-users"></i> Gérer les utilisateurs
+        </a>
+      </div>
+
+      <div class="sidebar-section">
+        <h3><i class="fas fa-tools"></i> Administration</h3>
+        <a href="{{ url_for('admin.admin_panel') }}" class="btn-stats">
+          <i class="fas fa-cog"></i> Panel admin
+        </a>
+        <a href="#" class="btn-settings">
+          <i class="fas fa-cogs"></i> Paramètres
+        </a>
+      </div>
+
+      <div class="sidebar-section">
+        <h3><i class="fas fa-user"></i> Compte</h3>
+        <a href="{{ url_for('logout') }}" class="btn-logout">
+          <i class="fas fa-sign-out-alt"></i> Déconnexion
+        </a>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main">
+      <h1 class="page-title">Gestion des utilisateurs</h1>
+
+      <!-- Search and Filters -->
+      <div class="controls">
+        <h2>
+          <i class="fas fa-search"></i>
+          Recherche et filtres
+        </h2>
+        <form method="get" class="search-filters">
+          <div class="form-group">
+            <label for="search">Rechercher</label>
+            <input type="text" id="search" name="search" placeholder="Nom, email..." value="{{ request.args.get('search', '') }}">
+          </div>
+          
+          <div class="form-group">
+            <label for="role">Rôle</label>
+            <select id="role" name="role">
+              <option value="">Tous les rôles</option>
+              <option value="admin" {{ 'selected' if request.args.get('role') == 'admin' }}>Administrateur</option>
+              <option value="user" {{ 'selected' if request.args.get('role') == 'user' }}>Utilisateur</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="status">Statut</label>
+            <select id="status" name="status">
+              <option value="">Tous les statuts</option>
+              <option value="active" {{ 'selected' if request.args.get('status') == 'active' }}>Actif</option>
+              <option value="inactive" {{ 'selected' if request.args.get('status') == 'inactive' }}>Inactif</option>
+            </select>
+          </div>
+          
+          <button type="submit" class="btn-search">
+            <i class="fas fa-search"></i> Rechercher
+          </button>
+    </form>
+      </div>
+
+      <!-- Users Table -->
+      <div class="users-container">
+        <div class="table-header">
+          <h2>
+            <i class="fas fa-list"></i>
+            Liste des utilisateurs ({{ users|length }})
+          </h2>
+        </div>
+        
+        <div class="table-container">
+          <table class="users-table">
+            <thead>
+              <tr>
+                <th>Utilisateur</th>
+            <th>Email</th>
+            <th>Rôle</th>
+                <th>Statut</th>
+                <th>Date d'inscription</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+              {% for user in users %}
+              <tr>
+                <td>
+                  <div class="user-info-cell">
+                    <div class="user-avatar">
+                      {{ user.nom[0].upper() if user.nom else 'U' }}
+                    </div>
+                    <div class="user-details">
+                      <h4>{{ user.nom }}</h4>
+                      <p>ID: {{ user.id_utilisateur }}</p>
+                    </div>
+                  </div>
+                </td>
+            <td>{{ user.email }}</td>
+            <td>
+                  <span class="role-badge role-{{ user.role }}">
+                    {{ user.role }}
+                  </span>
+                </td>
+                <td>
+                  <span class="status-badge status-active">
+                    Actif
+              </span>
+            </td>
+                <td>{{ user.date_creation.strftime('%d/%m/%Y') if user.date_creation else 'N/A' }}</td>
+                <td>
+                  <div class="action-buttons">
+                    <a href="{{ url_for('admin.modifier_utilisateur', id_utilisateur=user.id_utilisateur) }}" class="btn-action btn-edit" title="Modifier">
+                      <i class="fas fa-edit"></i> Modifier
+                    </a>
+                    {% if user.id_utilisateur != session.id_utilisateur %}
+                    <a href="{{ url_for('admin.supprimer_utilisateur', id_utilisateur=user.id_utilisateur) }}" class="btn-action btn-delete" title="Supprimer" 
+                       onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ? Cette action est irréversible.')">
+                      <i class="fas fa-trash"></i> Supprimer
+                </a>
+              {% endif %}
+                  </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+        <!-- Pagination -->
+        {% if pagination.pages > 1 %}
+        <div class="pagination">
+          {% if pagination.has_prev %}
+            <a href="{{ url_for('admin.admin_utilisateurs', page=pagination.prev_num, **request.args) }}">
+              <i class="fas fa-chevron-left"></i> Précédent
+            </a>
+          {% endif %}
+          
+          {% for page_num in pagination.iter_pages() %}
+            {% if page_num %}
+              {% if page_num != pagination.page %}
+                <a href="{{ url_for('admin.admin_utilisateurs', page=page_num, **request.args) }}">{{ page_num }}</a>
+              {% else %}
+                <span class="current">{{ page_num }}</span>
+              {% endif %}
+            {% else %}
+              <span>...</span>
+            {% endif %}
+          {% endfor %}
+          
+          {% if pagination.has_next %}
+            <a href="{{ url_for('admin.admin_utilisateurs', page=pagination.next_num, **request.args) }}">
+              Suivant <i class="fas fa-chevron-right"></i>
+            </a>
+          {% endif %}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const sidebar = document.getElementById('sidebar');
+      const main = document.querySelector('.main');
+      const edge = document.getElementById('sidebar-edge');
+      edge.addEventListener('mouseenter', function() {
+        sidebar.classList.add('show');
+        if(main) main.classList.add('shift');
+      });
+      sidebar.addEventListener('mouseleave', function() {
+        sidebar.classList.remove('show');
+        if(main) main.classList.remove('shift');
+      });
+      if(main) main.addEventListener('click', function() {
+        sidebar.classList.remove('show');
+        main.classList.remove('shift');
+      });
+    });
+
+    // Auto-submit form on filter change
+    document.querySelectorAll('select[name="role"], select[name="status"]').forEach(select => {
+      select.addEventListener('change', function() {
+        this.form.submit();
+      });
+    });
+  </script>
+</body>
+</html>

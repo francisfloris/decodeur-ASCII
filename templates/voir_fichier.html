@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Voir Fichier - Décodeur MSC</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+  body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    color: #333;
+  }
+
+  .container {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* Header */
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      z-index: 1000;
+      box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 1.5rem;
+      color: #333;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .user-email {
+      color: #666;
+      font-size: 0.9rem;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 280px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 20px;
+      position: fixed;
+      top: 60px;
+      left: 0;
+      height: calc(100vh - 60px);
+      overflow-y: auto;
+      box-shadow: 2px 0 20px rgba(0, 0, 0, 0.1);
+      z-index: 999;
+      transform: translateX(-280px);
+      transition: transform 0.3s ease;
+    }
+
+    .sidebar.show {
+      transform: translateX(0);
+    }
+
+    .sidebar-section {
+      margin-bottom: 25px;
+    }
+
+    .sidebar-section h3 {
+      color: #333;
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 15px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #f0f0f0;
+    }
+
+    .sidebar a {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 8px 0;
+      padding: 12px 15px;
+    border-radius: 10px;
+      font-weight: 500;
+      color: white;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      font-size: 0.9rem;
+  }
+
+    .sidebar a i {
+      width: 20px;
+    text-align: center;
+    }
+
+    .btn-dashboard { background: linear-gradient(135deg, #3b82f6, #60a5fa); }
+    .btn-files { background: linear-gradient(135deg, #8b5cf6, #a78bfa); }
+    .btn-decode { background: linear-gradient(135deg, #10b981, #34d399); }
+    .btn-upload { background: linear-gradient(135deg, #f59e0b, #fbbf24); }
+    .btn-logout { background: linear-gradient(135deg, #ef4444, #f87171); }
+
+    .sidebar a:hover {
+      transform: translateX(5px);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Main Content */
+    .main {
+      margin-left: 280px;
+      margin-top: 60px;
+      padding: 30px;
+      flex: 1;
+    }
+
+    .page-title {
+      font-size: 2rem;
+      font-weight: 700;
+      color: white;
+      margin-bottom: 30px;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    /* File Info Card */
+    .file-info-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    margin-bottom: 30px;
+      animation: fadeInUp 0.6s ease forwards;
+    }
+
+    .file-header {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 25px;
+      padding-bottom: 20px;
+      border-bottom: 2px solid #f0f0f0;
+    }
+
+    .file-icon {
+      width: 60px;
+      height: 60px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      color: white;
+    }
+
+    .file-details h2 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 5px;
+    }
+
+    .file-meta {
+      color: #666;
+      font-size: 0.9rem;
+    }
+
+    .file-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 20px;
+      margin-bottom: 25px;
+    }
+
+    .stat-item {
+      text-align: center;
+      padding: 15px;
+      background: #f8fafc;
+      border-radius: 10px;
+    }
+
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #333;
+      margin-bottom: 5px;
+    }
+
+    .stat-label {
+      color: #666;
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+
+    .file-actions {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+  }
+
+  .btn {
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      border: none;
+      cursor: pointer;
+      font-size: 0.9rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn-secondary {
+      background: #f3f4f6;
+      color: #374151;
+      border: 2px solid #e5e7eb;
+    }
+
+    .btn-secondary:hover {
+      background: #e5e7eb;
+      transform: translateY(-2px);
+    }
+
+    .btn-success {
+      background: linear-gradient(135deg, #10b981, #34d399);
+      color: white;
+    }
+
+    .btn-success:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-danger {
+      background: linear-gradient(135deg, #ef4444, #f87171);
+    color: white;
+    }
+
+    .btn-danger:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(239, 68, 68, 0.3);
+    }
+
+    /* File Content */
+    .file-content-container {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+      animation: fadeInUp 0.6s ease forwards;
+      animation-delay: 0.2s;
+    }
+
+    .content-header {
+      padding: 25px 30px;
+      border-bottom: 1px solid #f0f0f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .content-header h3 {
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: #333;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .content-controls {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn-control {
+      padding: 8px 12px;
+    border-radius: 6px;
+      font-size: 0.8rem;
+      background: #f1f5f9;
+      color: #475569;
+      border: 1px solid #e2e8f0;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .btn-control:hover {
+      background: #e2e8f0;
+  }
+
+    .btn-control.active {
+      background: #667eea;
+      color: white;
+      border-color: #667eea;
+  }
+
+    .file-content {
+      padding: 30px;
+      max-height: 600px;
+      overflow-y: auto;
+    }
+
+    .content-text {
+      background: #1f2937;
+      color: #f9fafb;
+      padding: 20px;
+      border-radius: 10px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      overflow-x: auto;
+    }
+
+    .content-json {
+      background: #f8fafc;
+      color: #333;
+      padding: 20px;
+      border-radius: 10px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      overflow-x: auto;
+      border: 1px solid #e5e7eb;
+    }
+
+    .content-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+
+    .content-table th {
+      background: #f8fafc;
+      padding: 12px 15px;
+      text-align: left;
+      font-weight: 600;
+      color: #333;
+      border-bottom: 2px solid #e5e7eb;
+    }
+
+    .content-table td {
+      padding: 12px 15px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .content-table tr:hover {
+      background: #f8fafc;
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 60px 30px;
+      color: #666;
+    }
+
+    .empty-state i {
+      font-size: 64px;
+      color: #cbd5e1;
+      margin-bottom: 20px;
+    }
+
+    .empty-state h3 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 10px;
+      color: #333;
+    }
+
+    .empty-state p {
+      font-size: 1rem;
+      margin-bottom: 20px;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .sidebar {
+        width: 100%;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+      }
+
+      .sidebar.show {
+        transform: translateX(0);
+      }
+
+      .main {
+        margin-left: 0;
+        padding: 20px;
+      }
+
+      .file-header {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .file-stats {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .file-actions {
+        flex-direction: column;
+      }
+
+      .btn {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .content-header {
+        flex-direction: column;
+        gap: 15px;
+        align-items: flex-start;
+      }
+
+      .content-controls {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .file-content {
+        padding: 20px;
+      }
+
+      .content-text,
+      .content-json {
+        font-size: 0.8rem;
+      }
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Syntax highlighting for JSON */
+    .json-key { color: #3b82f6; }
+    .json-string { color: #10b981; }
+    .json-number { color: #f59e0b; }
+    .json-boolean { color: #ef4444; }
+    .json-null { color: #6b7280; }
+
+    .sidebar-edge {
+      position: fixed;
+      top: 60px;
+      left: 0;
+      width: 20px;
+      height: calc(100vh - 60px);
+      z-index: 1000;
+      cursor: pointer;
+    }
+
+    .main.shift {
+      margin-left: 280px;
+  }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <div class="header">
+    <h1>
+      <i class="fas fa-file-alt"></i>
+      Voir Fichier
+    </h1>
+    <div class="user-info">
+      <span class="user-email">{{ session.email }}</span>
+      <button id="theme-toggle" class="btn" style="margin-right: 10px; font-size: 1.1rem;">
+        <i id="theme-icon" class="fas fa-moon"></i>
+      </button>
+      <a href="{{ url_for('logout') }}" class="btn" style="padding: 8px 16px; font-size: 0.8rem;">
+        <i class="fas fa-sign-out-alt"></i> Déconnexion
+      </a>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- Sidebar -->
+    <div class="sidebar-edge" id="sidebar-edge"></div>
+    <div class="sidebar" id="sidebar">
+      <div class="sidebar-section">
+        <h3><i class="fas fa-tachometer-alt"></i> Navigation</h3>
+        <a href="{{ url_for('dashboard.dashboard') }}" class="btn-dashboard">
+          <i class="fas fa-chart-line"></i> Dashboard
+        </a>
+        <a href="{{ url_for('files.fichiers') }}" class="btn-files">
+          <i class="fas fa-folder-open"></i> Mes fichiers
+        </a>
+        <a href="{{ url_for('files.decodeurs') }}" class="btn-files">
+          <i class="fas fa-history"></i> Historique
+        </a>
+      </div>
+
+      <div class="sidebar-section">
+        <h3><i class="fas fa-tools"></i> Actions</h3>
+        <a href="{{ url_for('files.upload') }}" class="btn-upload">
+          <i class="fas fa-upload"></i> Upload fichier
+        </a>
+        <a href="{{ url_for('files.decode') }}" class="btn-decode">
+          <i class="fas fa-cogs"></i> Lancer décodage
+        </a>
+      </div>
+
+      <div class="sidebar-section">
+        <h3><i class="fas fa-user"></i> Compte</h3>
+        <a href="{{ url_for('logout') }}" class="btn-logout">
+          <i class="fas fa-sign-out-alt"></i> Déconnexion
+        </a>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main">
+      <h1 class="page-title">Voir le fichier</h1>
+
+      {% if fichier %}
+      <!-- File Info Card -->
+      <div class="file-info-card">
+        <div class="file-header">
+          <div class="file-icon">
+            <i class="fas fa-file-alt"></i>
+          </div>
+          <div class="file-details">
+            <h2>{{ fichier.nom_fichier }}</h2>
+            <div class="file-meta">
+              <i class="fas fa-calendar"></i> {{ fichier.date_upload.strftime('%d/%m/%Y à %H:%M') if fichier.date_upload else 'Date inconnue' }} |
+              <i class="fas fa-user"></i> {{ fichier.utilisateur.nom if fichier.utilisateur else 'Utilisateur inconnu' }}
+            </div>
+          </div>
+        </div>
+
+        <div class="file-stats">
+          <div class="stat-item">
+            <div class="stat-value">{{ fichier.taille_fichier|filesizeformat if fichier.taille_fichier else 'N/A' }}</div>
+            <div class="stat-label">Taille</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">{{ fichier.type_fichier or 'N/A' }}</div>
+            <div class="stat-label">Type</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">{{ 'Oui' if fichier.traite else 'Non' }}</div>
+            <div class="stat-label">Traité</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">{{ fichier.lignes|length if fichier.lignes else 0 }}</div>
+            <div class="stat-label">Lignes</div>
+          </div>
+        </div>
+
+        <div class="file-actions">
+          <a href="{{ url_for('files.fichiers') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Retour aux fichiers
+          </a>
+          <a href="{{ url_for('files.decode') }}" class="btn btn-success">
+            <i class="fas fa-cogs"></i> Lancer décodage
+          </a>
+          <a href="{{ url_for('files.export_fichier', id_fichier=fichier.id_fichier) }}" class="btn btn-primary">
+            <i class="fas fa-download"></i> Exporter
+          </a>
+          <button class="btn btn-danger" onclick="deleteFile()">
+            <i class="fas fa-trash"></i> Supprimer
+          </button>
+        </div>
+      </div>
+
+      <!-- File Content -->
+      <div class="file-content-container">
+        <div class="content-header">
+          <h3>
+            <i class="fas fa-eye"></i>
+            Contenu du fichier
+          </h3>
+          <div class="content-controls">
+            <button class="btn-control active" onclick="showContent('raw')">Brut</button>
+            <button class="btn-control" onclick="showContent('formatted')">Formaté</button>
+            <button class="btn-control" onclick="showContent('table')">Tableau</button>
+          </div>
+        </div>
+
+        <div class="file-content">
+          <!-- Raw Content -->
+          <div id="raw-content" class="content-view">
+            <div class="content-text">{{ fichier.contenu or 'Aucun contenu disponible' }}</div>
+          </div>
+
+          <!-- Formatted Content -->
+          <div id="formatted-content" class="content-view" style="display: none;">
+            <div class="content-json">{{ fichier.contenu or 'Aucun contenu disponible' }}</div>
+          </div>
+
+          <!-- Table Content -->
+          <div id="table-content" class="content-view" style="display: none;">
+            {% if fichier.lignes %}
+            <table class="content-table">
+              <thead>
+                <tr>
+                  <th>Ligne</th>
+                  <th>Contenu</th>
+                  <th>Statut</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for ligne in fichier.lignes %}
+                <tr>
+                  <td>{{ loop.index }}</td>
+                  <td>{{ ligne.contenu_ligne[:100] }}{{ '...' if ligne.contenu_ligne|length > 100 else '' }}</td>
+                  <td>
+                    <span class="status-badge status-{{ 'success' if ligne.statut == 'Traité' else 'pending' }}">
+                      {{ ligne.statut }}
+                    </span>
+                  </td>
+                </tr>
+{% endfor %}
+              </tbody>
+            </table>
+            {% else %}
+            <div class="empty-state">
+              <i class="fas fa-table"></i>
+              <h3>Aucune ligne traitée</h3>
+              <p>Ce fichier n'a pas encore été traité.</p>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% else %}
+      <!-- Empty State -->
+      <div class="file-info-card">
+        <div class="empty-state">
+          <i class="fas fa-file-alt"></i>
+          <h3>Fichier non trouvé</h3>
+          <p>Le fichier que vous recherchez n'existe pas ou a été supprimé.</p>
+          <a href="{{ url_for('files.fichiers') }}" class="btn btn-primary">
+            <i class="fas fa-arrow-left"></i> Retour aux fichiers
+          </a>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <script>
+    // Content view switching
+    function showContent(view) {
+      // Hide all content views
+      document.querySelectorAll('.content-view').forEach(el => {
+        el.style.display = 'none';
+      });
+      
+      // Remove active class from all controls
+      document.querySelectorAll('.btn-control').forEach(el => {
+        el.classList.remove('active');
+      });
+      
+      // Show selected view
+      document.getElementById(view + '-content').style.display = 'block';
+      
+      // Add active class to clicked control
+      event.target.classList.add('active');
+    }
+
+    // Delete file confirmation
+    function deleteFile() {
+      if (confirm('Êtes-vous sûr de vouloir supprimer ce fichier ? Cette action est irréversible.')) {
+        // Redirect to delete route
+        window.location.href = "{{ url_for('files.supprimer_fichier', id_fichier=fichier.id_fichier) if fichier else '#' }}";
+      }
+    }
+
+    // Toggle sidebar on mobile
+    function toggleSidebar() {
+      const sidebar = document.querySelector('.sidebar');
+      sidebar.classList.toggle('show');
+    }
+
+    // JSON syntax highlighting
+    function highlightJSON() {
+      const jsonElements = document.querySelectorAll('.content-json');
+      jsonElements.forEach(element => {
+        let text = element.textContent;
+        text = text.replace(/"([^"]+)":/g, '<span class="json-key">"$1"</span>:');
+        text = text.replace(/"([^"]*)"/g, '<span class="json-string">"$1"</span>');
+        text = text.replace(/\b(\d+\.?\d*)\b/g, '<span class="json-number">$1</span>');
+        text = text.replace(/\b(true|false)\b/g, '<span class="json-boolean">$1</span>');
+        text = text.replace(/\bnull\b/g, '<span class="json-null">null</span>');
+        element.innerHTML = text;
+      });
+    }
+
+    // Mode sombre/clair
+    (function() {
+      const themeToggle = document.getElementById('theme-toggle');
+      const themeIcon = document.getElementById('theme-icon');
+      function setTheme(dark) {
+        if (dark) {
+          document.body.classList.add('dark-mode');
+          themeIcon.classList.remove('fa-moon');
+          themeIcon.classList.add('fa-sun');
+          themeToggle.title = 'Passer en mode clair';
+          localStorage.setItem('theme', 'dark');
+        } else {
+          document.body.classList.remove('dark-mode');
+          themeIcon.classList.remove('fa-sun');
+          themeIcon.classList.add('fa-moon');
+          themeToggle.title = 'Passer en mode sombre';
+          localStorage.setItem('theme', 'light');
+        }
+      }
+      if (themeToggle && themeIcon) {
+        const savedTheme = localStorage.getItem('theme');
+        setTheme(savedTheme === 'dark');
+        themeToggle.addEventListener('click', function() {
+          setTheme(!document.body.classList.contains('dark-mode'));
+        });
+        window.addEventListener('storage', function(e) {
+          if (e.key === 'theme') {
+            setTheme(e.newValue === 'dark');
+          }
+        });
+      }
+    })();
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+      highlightJSON();
+      const sidebar = document.getElementById('sidebar');
+      const main = document.querySelector('.main');
+      const edge = document.getElementById('sidebar-edge');
+      edge.addEventListener('mouseenter', function() {
+        sidebar.classList.add('show');
+        if(main) main.classList.add('shift');
+      });
+      sidebar.addEventListener('mouseleave', function() {
+        sidebar.classList.remove('show');
+        if(main) main.classList.remove('shift');
+      });
+      if(main) main.addEventListener('click', function() {
+        sidebar.classList.remove('show');
+        main.classList.remove('shift');
+      });
+    });
+  </script>
+</body>
+</html>
